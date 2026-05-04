@@ -241,6 +241,14 @@ onMounted(() => fetchProduct())
         >
           Message seller on WhatsApp
         </a>
+
+        <!-- after the whatsapp-btn -->
+<RouterLink
+  to="{ name: 'Overview', params: { sellerId } }"
+  class="back-btn"
+>
+  Browse more products
+</RouterLink>
       </div>
     </div>
 
@@ -250,6 +258,12 @@ onMounted(() => fetchProduct())
       <!-- Store bar -->
       <div class="store-bar">
         <div class="store-bar-inner">
+          <!-- <RouterLink
+  :to="{ name: 'Overview', params: { sellerId } }"
+  class="store-back"
+>
+  <ChevronLeft :size="15" :stroke-width="2" />
+</RouterLink> -->
           <div class="store-identity">
             <div class="store-logo">
               <img v-if="store?.logo_url" :src="store.logo_url" :alt="store?.name" />
@@ -591,6 +605,26 @@ onMounted(() => fetchProduct())
 }
 
 /* ── Store bar ───────────────────────────────────────── */
+
+.store-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-right: 10px;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.store-back:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
 .store-bar {
   background: var(--bg-page);
   border-bottom: 1px solid var(--border);
@@ -613,15 +647,15 @@ onMounted(() => fetchProduct())
 .store-logo {
   width: 30px;
   height: 30px;
-  border-radius: 7px;
-  background: #1E1B4B;
+  border-radius: 10px;
+  /* background: #1E1B4B; */
   border: 1px solid #312E81;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  color: #A5B4FC;
-  font-size: 13px;
+  /* color: #A5B4FC; */
+  font-size: 16px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -1056,6 +1090,9 @@ onMounted(() => fetchProduct())
   color: #fff;
 }
 
+
+
+
 /* ── Order summary ───────────────────────────────────── */
 .order-summary {
   padding: 16px 20px;
@@ -1100,6 +1137,26 @@ onMounted(() => fetchProduct())
   color: var(--text-disabled);
   margin: 0;
   line-height: 1.5;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 42px;
+  background: none;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.back-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 /* ── Submit button ───────────────────────────────────── */
@@ -1148,12 +1205,12 @@ onMounted(() => fetchProduct())
 .success-icon {
   width: 56px;
   height: 56px;
-  border-radius: 14px;
+  border-radius: 24px;
   background: var(--status-paid-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--status-paid-text);
+  /* color: var(--status-paid-text); */
 }
 .success-title {
   font-size: 20px;
