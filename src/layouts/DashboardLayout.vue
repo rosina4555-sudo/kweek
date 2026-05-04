@@ -29,41 +29,31 @@ const mobileOpen = ref(false)
 
 <style scoped>
 .ds-shell {
-  display: grid;
-  grid-template-columns: 216px 1fr;
-  min-height: 100vh;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
   background: var(--bg-sunken);
-  transition: grid-template-columns 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Collapsed state — grid column shrinks with the sidebar */
-.ds-shell:has(.sidebar--collapsed) {
-  grid-template-columns: 58px 1fr;
-}
-
-/* Mobile — sidebar is overlaid, body takes full width */
-@media (max-width: 767px) {
-  .ds-shell {
-    grid-template-columns: 1fr;
-  }
-  .ds-shell:has(.sidebar--collapsed) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .ds-body {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .ds-content {
   flex: 1;
-  padding: 24px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 @media (max-width: 480px) {
-  .ds-content { padding: 16px 14px; }
+  .ds-content { padding: 14px; }
 }
 </style>

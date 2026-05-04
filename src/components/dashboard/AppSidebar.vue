@@ -23,16 +23,16 @@ const navGroups = [
   {
     section: 'Main',
     items: [
-      { label: 'Overview',   name: 'Overview',   icon: 'pi-th-large' },
-      { label: 'Products',   name: 'Products',   icon: 'pi-box'      },
-      { label: 'Orders',     name: 'Orders',     icon: 'pi-receipt'  },
+      { label: 'Overview',   name: 'Overview',   icon: 'pi-objects-column' },
+      { label: 'Products',   name: 'Products',   icon: 'pi-tag'      },
+      { label: 'Orders',     name: 'Orders',     icon: 'pi-shopping-bag'  },
     ],
   },
   {
     section: 'Store',
     items: [
-      { label: 'Storefront', name: 'Storefront', icon: 'pi-globe'     },
-      { label: 'Analytics',  name: 'Analytics',  icon: 'pi-chart-bar' },
+      { label: 'Storefront', name: 'Storefront', icon: 'pi-image'     },
+      { label: 'Analytics',  name: 'Analytics',  icon: 'pi-chart-line' },
     ],
   },
   {
@@ -129,27 +129,35 @@ function isActive(routeName) {
 
 /* ── Sidebar ─────────────────────────────────────────── */
 .sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
   width: 216px;
+  height: 100vh;
   background: #0F1117;
   border-right: 1px solid #1E2130;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Hidden on mobile */
+  position: fixed;
+  top: 0;
+  left: 0;
   z-index: 50;
   transform: translateX(-100%);
   transition:
     transform 0.24s cubic-bezier(0.4, 0, 0.2, 1),
     width     0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
 }
 
 @media (min-width: 768px) {
   .sidebar {
     position: relative;
     transform: translateX(0);
+    top: auto;
+    left: auto;
+    height: 100vh;
     flex-shrink: 0;
-    height: 100%;
   }
   .sidebar--collapsed { width: 58px; }
 }
@@ -238,14 +246,14 @@ function isActive(routeName) {
 .nav-icon-wrap {
   width: 30px;
   height: 30px;
-  border-radius: 7px;
-  background: #161A23;
-  border: 1px solid #1E2130;
+  border-radius: 16px;
+  /* background: #161A23; */
+  /* border: 1px solid #1E2130; */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 15px;
   color: #6B7280;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -289,11 +297,11 @@ function isActive(routeName) {
   overflow: hidden;
 }
 .sb-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
+  width: 34px;
+  height: 34px;
+  border-radius: 16px;
   background: #161A23;
-  border: 1px solid #1E2130;
+  border: 3px solid #1E2130;
   color: #6B7280;
   font-size: 11px;
   font-weight: 600;

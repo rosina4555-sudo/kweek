@@ -215,9 +215,9 @@ async function handleLogout() {
 .tb-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 7px;
+  border-radius: 16px;
   background: #1E1B4B;
-  border: 1px solid #312E81;
+  border: 3px solid #312E81;
   color: #A5B4FC;
   font-size: 11px;
   font-weight: 600;
