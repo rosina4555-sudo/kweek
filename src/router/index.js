@@ -4,7 +4,7 @@ import { requireAuth, requireGuest } from './guards'
 // Layouts
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
-// import StorefrontLayout from '@/layouts/StorefrontLayout.vue'
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue'
 
 // Auth views
 import LoginView from '@/views/auth/LoginView.vue'
@@ -20,7 +20,7 @@ const SettingsView    = () => import('@/views/dashboard/SettingsView.vue')
 
 // Storefront views — lazy loaded
 // const StoreHomeView     = () => import('@/views/storefront/StoreHomeView.vue')
-// const ProductDetailView = () => import('@/views/storefront/ProductDetailView.vue')
+const ProductDetailView = () => import('@/views/storefront/ProductDetailView.vue')
 // const CartView          = () => import('@/views/storefront/CartView.vue')
 // const CheckoutView      = () => import('@/views/storefront/CheckoutView.vue')
 // const OrderSuccessView  = () => import('@/views/storefront/OrderSuccessView.vue')
@@ -104,42 +104,42 @@ const routes = [
   },
 
   // // ─── Buyer storefront (public) ──────────────────────────
-  // {
-  //   path: '/store/:sellerId',
-  //   component: StorefrontLayout,
-  //   children: [
-  //     {
-  //       path: '',
-  //       name: 'StoreHome',
-  //       component: StoreHomeView,
-  //       meta: { title: 'Shop' },
-  //     },
-  //     {
-  //       path: 'product/:productId',
-  //       name: 'ProductDetail',
-  //       component: ProductDetailView,
-  //       meta: { title: 'Product' },
-  //     },
-  //     {
-  //       path: 'cart',
-  //       name: 'Cart',
-  //       component: CartView,
-  //       meta: { title: 'Cart' },
-  //     },
-  //     {
-  //       path: 'checkout',
-  //       name: 'Checkout',
-  //       component: CheckoutView,
-  //       meta: { title: 'Checkout' },
-  //     },
-  //     {
-  //       path: 'order/success',
-  //       name: 'OrderSuccess',
-  //       component: OrderSuccessView,
-  //       meta: { title: 'Order placed' },
-  //     },
-  //   ],
-  // },
+  {
+    path: '/store/:sellerId',
+    component: StorefrontLayout,
+    children: [
+      // {
+      //   path: '',
+      //   name: 'StoreHome',
+      //   component: StoreHomeView,
+      //   meta: { title: 'Shop' },
+      // },
+      {
+        path: 'product/:productId',
+        name: 'ProductDetail',
+        component: ProductDetailView,
+        meta: { title: 'Product' },
+      },
+      // {
+      //   path: 'cart',
+      //   name: 'Cart',
+      //   component: CartView,
+      //   meta: { title: 'Cart' },
+      // },
+      // {
+      //   path: 'checkout',
+      //   name: 'Checkout',
+      //   component: CheckoutView,
+      //   meta: { title: 'Checkout' },
+      // },
+      // {
+      //   path: 'order/success',
+      //   name: 'OrderSuccess',
+      //   component: OrderSuccessView,
+      //   meta: { title: 'Order placed' },
+      // },
+    ],
+  },
 
   // ─── Root redirect ───────────────────────────────────────
   {
