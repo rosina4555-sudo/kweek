@@ -19,7 +19,7 @@ const AnalyticsView   = () => import('@/views/dashboard/AnalyticsView.vue')
 const SettingsView    = () => import('@/views/dashboard/SettingsView.vue')
 
 // Storefront views — lazy loaded
-// const StoreHomeView     = () => import('@/views/storefront/StoreHomeView.vue')
+const StoreHomeView     = () => import('@/views/storefront/StoreHomeView.vue')
 const ProductDetailView = () => import('@/views/storefront/ProductDetailView.vue')
 // const CartView          = () => import('@/views/storefront/CartView.vue')
 // const CheckoutView      = () => import('@/views/storefront/CheckoutView.vue')
@@ -108,12 +108,12 @@ const routes = [
     path: '/store/:sellerId',
     component: StorefrontLayout,
     children: [
-      // {
-      //   path: '',
-      //   name: 'StoreHome',
-      //   component: StoreHomeView,
-      //   meta: { title: 'Shop' },
-      // },
+      {
+        path: '',
+        name: 'StoreHome',
+        component: StoreHomeView,
+        meta: { title: 'Shop' },
+      },
       {
         path: 'product/:productId',
         name: 'ProductDetail',
