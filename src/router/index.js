@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { requireAuth, requireGuest } from './guards'
 
+import HomeView from '@/views/HomeView.vue'
+
 // Layouts
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
@@ -29,6 +31,10 @@ const ProductDetailView = () => import('@/views/storefront/ProductDetailView.vue
 // const NotFoundView = () => import('../views/NotFoundView.vue')
 
 const routes = [
+  {
+   path: '/',
+   component: HomeView
+  },
   // ─── Auth ───────────────────────────────────────────────
   {
     path: '/auth',
