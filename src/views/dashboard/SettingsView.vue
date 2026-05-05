@@ -550,7 +550,7 @@ function onAvatarChange(e) {
 .avatar-img {
   width: 56px;
   height: 56px;
-  border-radius: 10px;
+  border-radius: 16px;
   object-fit: cover;
   border: 1px solid var(--border);
 }
@@ -558,7 +558,7 @@ function onAvatarChange(e) {
   width: 56px;
   height: 56px;
   border-radius: 10px;
-  background: #1E1B4B;
+  /* background: #1E1B4B; */
   border: 1px solid #312E81;
   display: flex;
   align-items: center;
@@ -570,8 +570,8 @@ function onAvatarChange(e) {
 .avatar-overlay {
   position: absolute;
   inset: 0;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.4);
+  border-radius: 16px;
+  /* background: rgba(0,0,0,0.4); */
   display: flex;
   align-items: center;
   justify-content: center;
