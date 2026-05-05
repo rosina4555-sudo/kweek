@@ -31,10 +31,13 @@ const ProductDetailView = () => import('@/views/storefront/ProductDetailView.vue
 // const NotFoundView = () => import('../views/NotFoundView.vue')
 
 const routes = [
-  {
-   path: '/',
-   component: HomeView
-  },
+ // at the top of routes array, before auth routes
+{
+  path: '/',
+  name: 'Home',
+  component: HomeView,
+  meta: { title: 'Kweek — Your orders, finally organised' },
+},
   // ─── Auth ───────────────────────────────────────────────
   {
     path: '/auth',
@@ -150,7 +153,7 @@ const routes = [
   // ─── Root redirect ───────────────────────────────────────
   {
     path: '/',
-    redirect: { name: 'Login' },
+    redirect: { name: 'Home' },
   },
 
   // ─── 404 ────────────────────────────────────────────────
