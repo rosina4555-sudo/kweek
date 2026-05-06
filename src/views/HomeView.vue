@@ -53,21 +53,21 @@ onUnmounted(() => observer?.disconnect())
 // ── Data ──────────────────────────────────────────────
 const steps = [
   {
-    num:  '01',
+    num:  '1/',
     title: 'List your product',
     desc:  'Upload a photo, set your price, add size and color variants. You get a clean shareable link in under 60 seconds.',
     tag:   'kweek.app/store/your-store',
     icon:  Package,
   },
   {
-    num:  '02',
+    num:  '2/',
     title: 'Share the link anywhere',
     desc:  'Drop it in your WhatsApp status, Instagram bio, or DM. Buyers open the page and order without messaging you first.',
     tag:   'WhatsApp · Instagram · TikTok · Facebook',
     icon:  Link2,
   },
   {
-    num:  '03',
+    num:  '3/',
     title: 'Orders land in your dashboard',
     desc:  'Buyer name, phone, location, quantity — all there automatically. Mark payment status. Add manual orders for DM customers.',
     tag:   'Zero setup. Just works.',
@@ -216,7 +216,7 @@ const testimonials = [
       <div class="hero-inner">
         <!-- Eyebrow -->
         <div class="hero-eyebrow">
-          <span class="eyebrow-dot" />
+          <!-- <span class="eyebrow-dot" /> -->
           Built for social sellers in Ghana and West Africa
         </div>
 
@@ -233,7 +233,7 @@ const testimonials = [
 
         <div class="hero-actions">
           <a href="#waitlist" class="btn-primary btn--hero">
-            Get early access — it's free
+            Get early access
             <ArrowRight :size="14" :stroke-width="2" />
           </a>
           <a href="#how" class="btn-outline">
@@ -348,7 +348,7 @@ const testimonials = [
             class="pain-item reveal"
             :style="{ '--delay': `${i * 80}ms` }"
           >
-            <div class="pain-line" />
+            <!-- <div class="pain-line" /> -->
             <div>
               <p class="pain-title">{{ p.title }}</p>
               <p class="pain-desc">{{ p.desc }}</p>
@@ -570,7 +570,7 @@ const testimonials = [
           </div>
         </form>
 
-        <p class="cta-note">No spam. No credit card. Unsubscribe any time.</p>
+        <p class="cta-note">No credit card required. Unsubscribe any time.</p>
       </div>
     </section>
 
