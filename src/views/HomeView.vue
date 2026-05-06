@@ -3,8 +3,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
-  Link2, PenLine, Wallet, CheckCircle2, Zap,
-  Sun, Moon, Menu, X as XIcon,
+  Link2, PenLine, Wallet, CheckCircle2, Zap, 
+  AlarmClockCheck,
+  Sun, Moon, Menu, X as XIcon, 
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -84,7 +85,7 @@ const features = [
   {
     icon:  Link2,
     title: 'Shareable product pages',
-    desc:  'A minimal buyer-facing page — image, price, order button. Built specifically for WhatsApp status and Instagram bio.',
+    desc:  'A simple page that shows off the photo, price, and a "buy" button. It’s built to work perfectly for your WhatsApp status or Instagram bio so your customers can shop in seconds.',
   },
   {
     icon:  ShoppingBag,
@@ -316,7 +317,7 @@ const testimonials = [
           <span v-for="i in 5" :key="i" class="star">★</span>
         </div>
         <p class="proof-text">
-          Joined by <strong>120+ sellers</strong> on the waitlist across Kumasi, Accra and Lagos
+          Joined by <strong>120+ sellers</strong> on the waitlist across Kumasi, Accra and Sunyani
         </p>
         <div class="proof-sep" />
         <p class="proof-quote">"This is exactly what I've been needing." — Seller, Kumasi</p>
@@ -365,7 +366,7 @@ const testimonials = [
           <p class="section-eyebrow">How it works</p>
           <h2 class="section-title">Three steps. That's it.</h2>
           <p class="section-sub">
-            Same things you do today — just without the chaos.
+           You can keep your current workflow while completely eliminating the usual chaos.
           </p>
         </div>
 
@@ -399,7 +400,7 @@ const testimonials = [
           <p class="section-eyebrow">Features</p>
           <h2 class="section-title">Everything you actually need.</h2>
           <p class="section-sub">
-            Four core features. No noise. No subscription to a dozen add-ons.
+            We provide four essential features designed to eliminate distractions and the need for multiple unnecessary subscriptions.
           </p>
         </div>
 
@@ -411,7 +412,7 @@ const testimonials = [
             :style="{ '--delay': `${i * 60}ms` }"
           >
             <div class="feature-icon">
-              <component :is="f.icon" :size="14" :stroke-width="1.8" />
+              <component :is="f.icon" :size="16" :stroke-width="2" />
             </div>
             <p class="feature-title">{{ f.title }}</p>
             <p class="feature-desc">{{ f.desc }}</p>
@@ -428,9 +429,7 @@ const testimonials = [
             <p class="section-eyebrow">Shareable storefront</p>
             <h2 class="callout-title">One link.<br />Every channel.</h2>
             <p class="callout-desc">
-              Every product you list gets a clean, minimal buyer page. Share the link
-              anywhere — WhatsApp status, Instagram bio, TikTok, DMs. Buyers place their
-              order without messaging you first.
+              Every product you list features a professional, streamlined checkout page. Share your unique link across platforms like WhatsApp, Instagram, and TikTok to enable customers to complete purchases directly without the need for manual coordination.
             </p>
             <div class="link-demo">
               <span class="link-demo-url">kweek.app/store/amas-boutique</span>
@@ -491,7 +490,7 @@ const testimonials = [
                 <p class="pricing-note">Honest pricing announced before public launch.</p>
               </div>
               <div class="pricing-badge">
-                <Zap :size="10" :stroke-width="2" />
+                <AlarmClockCheck :size="16" :stroke-width="2" />
                 Limited spots
               </div>
             </div>
@@ -1123,14 +1122,14 @@ const testimonials = [
   margin-top: 2px;
 }
 .pain-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 5px;
   letter-spacing: -0.1px;
 }
 .pain-desc {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   line-height: 1.6;
 }
@@ -1155,7 +1154,7 @@ const testimonials = [
   align-items: flex-start;
   justify-content: center;
   padding-top: 26px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-disabled);
   border-right: 1px solid var(--border);
@@ -1172,7 +1171,7 @@ const testimonials = [
   height: 36px;
   border-radius: 9px;
   border: 1px solid var(--border);
-  background: var(--bg-surface);
+  /* background: var(--bg-surface); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1208,19 +1207,19 @@ const testimonials = [
 }
 .feature-card:hover { border-color: var(--border-strong); }
 .feature-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg-surface);
+  /* background: var(--bg-surface); */
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   margin-bottom: 14px;
 }
-.feature-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.1px; }
-.feature-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+.feature-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.1px; }
+.feature-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── LINK CALLOUT ────────────────────────────────────── */
 .link-callout {
@@ -1286,7 +1285,7 @@ const testimonials = [
   border: 1px solid var(--border);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.06);
   width: 100%;
   max-width: 300px;
 }
@@ -1396,7 +1395,7 @@ const testimonials = [
 }
 .pricing-price {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 40px;
+  font-size: 42px;
   font-weight: 600;
   letter-spacing: -2px;
   color: var(--text-primary);
@@ -1408,9 +1407,7 @@ const testimonials = [
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: var(--status-pending-bg);
-  color: var(--status-pending-text);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 100px;
@@ -1429,7 +1426,7 @@ const testimonials = [
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
 }

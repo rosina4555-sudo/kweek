@@ -36,7 +36,7 @@ const routes = [
   path: '/',
   name: 'Home',
   component: HomeView,
-  meta: { title: 'Kweek — Your orders, finally organised' },
+  meta: { title: 'Your orders, finally organised' },
 },
   // ─── Auth ───────────────────────────────────────────────
   {
