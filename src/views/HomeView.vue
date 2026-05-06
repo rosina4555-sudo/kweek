@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
   Link2, PenLine, Wallet, CheckCircle2, Zap, 
-  AlarmClockCheck,
+  AlarmClockCheck, ShieldCheck, Sparkles,
   Sun, Moon, Menu, X as XIcon, 
 } from 'lucide-vue-next'
 
@@ -228,8 +228,7 @@ const testimonials = [
         </h1>
 
         <p class="hero-sub">
-          Kweek is a lightweight workspace for social sellers. List products,
-          capture buyer orders, and track payments — without the WhatsApp chaos.
+          Kweek is a simple workspace built for social sellers. You can list your products, take buyer orders, and track every payment without dealing with the usual WhatsApp chaos.
         </p>
 
         <div class="hero-actions">
@@ -243,12 +242,12 @@ const testimonials = [
         </div>
 
         <div class="hero-trust">
-          <CheckCircle2 :size="12" :stroke-width="2" class="trust-check" />
+          <Sparkles :size="13" :stroke-width="2.5" class="trust-check" />
           Free during beta
           <span class="trust-sep">·</span>
           No credit card
           <span class="trust-sep">·</span>
-          2-minute setup
+          Easy setup
         </div>
 
         <!-- Dashboard preview -->
@@ -869,7 +868,7 @@ const testimonials = [
   align-items: center;
   gap: 8px;
   background: var(--bg-page);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 100px;
   padding: 5px 14px 5px 10px;
   margin-bottom: 32px;
@@ -877,14 +876,7 @@ const testimonials = [
   font-weight: 500;
   color: var(--text-secondary);
 }
-.eyebrow-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--status-paid-text);
-  box-shadow: 0 0 0 2px var(--status-paid-bg);
-  flex-shrink: 0;
-}
+
 
 .hero-title {
   font-size: clamp(38px, 5.5vw, 64px);
@@ -919,7 +911,7 @@ const testimonials = [
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-disabled);
   margin-bottom: 60px;
   flex-wrap: wrap;
@@ -1051,7 +1043,7 @@ const testimonials = [
 .proof-bar {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
+  /* background: var(--bg-surface); */
   padding: 14px 32px;
 }
 .proof-inner {
@@ -1513,12 +1505,13 @@ const testimonials = [
 
 .waitlist-input {
   flex: 1;
-  height: 48px;
+  height: 60px;
+  width: 100%;
   padding: 0 16px;
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 19px;
   color: #F9FAFB;
   font-family: inherit;
   outline: none;
