@@ -172,9 +172,9 @@ const testimonials = [
       <div class="hero-grid" aria-hidden="true" />
       <div class="hero-inner">
 
-        <div class="hero-eyebrow">
+        <!-- <div class="hero-eyebrow">
           Built for social sellers in Ghana and West Africa
-        </div>
+        </div> -->
 
         <h1 class="hero-title">
           Your orders.<br />
@@ -623,7 +623,7 @@ const testimonials = [
 }
 .nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .nav-logo-icon {
-  width: 28px; height: 28px; overflow: hidden;
+  width: 28px; height: 28px; overflow: hidden; color: var(--text-primary);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .nav-logo-img  { width: 100%; height: 100%; object-fit: contain; }
