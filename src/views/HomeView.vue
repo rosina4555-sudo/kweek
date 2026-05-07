@@ -1,14 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
-  Link2, PenLine, Wallet, CheckCircle2, Zap, 
+  Link2, PenLine, Wallet, CheckCircle2, Zap,
   AlarmClockCheck, ShieldCheck, Sparkles,
-  Sun, Moon, Menu, X as XIcon, 
+  Sun, Moon, Menu, X as XIcon,
 } from 'lucide-vue-next'
-
-const router = useRouter()
 
 // ── Theme ─────────────────────────────────────────────
 const isDark = ref(document.documentElement.classList.contains('dark'))
@@ -21,16 +18,74 @@ function toggleTheme() {
 const mobileNavOpen = ref(false)
 
 // ── Waitlist form ─────────────────────────────────────
-const email      = ref('')
-const submitted  = ref(false)
-const submitting = ref(false)
+const email       = ref('')
+const submitted   = ref(false)
+const submitting  = ref(false)
+const formError   = ref('')
+
+// Scroll any CTA to the form
+function scrollToWaitlist(e) {
+  e?.preventDefault()
+  mobileNavOpen.value = false
+  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })
+}
 
 async function submitWaitlist() {
-  if (!email.value || submitting.value) return
+  formError.value = ''
+
+  // Basic client-side email check before hitting the network
+  const emailVal = email.value.trim()
+  if (!emailVal) {
+    formError.value = 'Please enter your email address.'
+    return
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(emailVal)) {
+    formError.value = 'Please enter a valid email address.'
+    return
+  }
+
+  if (submitting.value) return
   submitting.value = true
-  await new Promise(r => setTimeout(r, 900))
-  submitted.value  = true
-  submitting.value = false
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/waitlist/`,
+      {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // No auth header — this is a public endpoint
+        // withCredentials not needed — no cookies on waitlist
+        body: JSON.stringify({
+          email:  emailVal,
+          source: 'landing_page',
+        }),
+      }
+    )
+
+    if (!res.ok) {
+      // Parse FastAPI error detail
+      const data = await res.json().catch(() => ({}))
+      const detail = data?.detail
+      if (typeof detail === 'string') {
+        formError.value = detail
+      } else if (Array.isArray(detail)) {
+        formError.value = detail.map(e => e.msg).join(', ')
+      } else {
+        formError.value = 'Something went wrong. Please try again.'
+      }
+      return
+    }
+
+    // Success — we don't need the response body
+    submitted.value = true
+    email.value     = ''
+  } catch {
+    // Network failure — never expose raw errors to user
+    formError.value = 'Unable to connect. Please check your connection and try again.'
+  } finally {
+    submitting.value = false
+  }
 }
 
 // ── Scroll reveal ─────────────────────────────────────
@@ -51,24 +106,24 @@ onMounted(() => {
 })
 onUnmounted(() => observer?.disconnect())
 
-// ── Data ──────────────────────────────────────────────
+// ── Static data ───────────────────────────────────────
 const steps = [
   {
-    num:  '1/',
+    num:   '1/',
     title: 'List your product',
     desc:  'Upload a photo, set your price, add size and color variants. You get a clean shareable link in under 60 seconds.',
     tag:   'kweek.app/store/your-store',
     icon:  Package,
   },
   {
-    num:  '2/',
+    num:   '2/',
     title: 'Share the link anywhere',
     desc:  'Drop it in your WhatsApp status, Instagram bio, or DM. Buyers open the page and order without messaging you first.',
     tag:   'WhatsApp · Instagram · TikTok · Facebook',
     icon:  Link2,
   },
   {
-    num:  '3/',
+    num:   '3/',
     title: 'Orders land in your dashboard',
     desc:  'Buyer name, phone, location, quantity — all there automatically. Mark payment status. Add manual orders for DM customers.',
     tag:   'Zero setup. Just works.',
@@ -85,7 +140,7 @@ const features = [
   {
     icon:  Link2,
     title: 'Shareable product pages',
-    desc:  'A simple page that shows off the photo, price, and a "buy" button. It’s built to work perfectly for your WhatsApp status or Instagram bio so your customers can shop in seconds.',
+    desc:  'A simple page that shows off the photo, price, and a buy button. Built to work perfectly for your WhatsApp status or Instagram bio.',
   },
   {
     icon:  ShoppingBag,
@@ -110,10 +165,10 @@ const features = [
 ]
 
 const mockOrders = [
-  { id: '#KW-1042', name: 'Abena Mensah',  product: 'Ankara Dress · Size M',    location: 'Kumasi',        amount: 'GH₵ 160', status: 'paid'    },
-  { id: '#KW-1041', name: 'Kofi Asante',   product: 'Kente Bag · Brown · ×2',   location: 'Accra Central', amount: 'GH₵ 160', status: 'unpaid'  },
-  { id: '#KW-1040', name: 'Efua Darko',    product: 'Leather Sandals · Size 40', location: 'East Legon',   amount: 'GH₵ 120', status: 'pod'     },
-  { id: '#KW-1039', name: 'Ama Boateng',   product: 'Dashiki Shirt · L, Navy',  location: 'Takoradi',      amount: 'GH₵ 85',  status: 'paid'    },
+  { id: '#KW-1042', name: 'Abena Mensah',  product: 'Ankara Dress · Size M',     location: 'Kumasi',        amount: 'GH₵ 160', status: 'paid'   },
+  { id: '#KW-1041', name: 'Kofi Asante',   product: 'Kente Bag · Brown · ×2',    location: 'Accra Central', amount: 'GH₵ 160', status: 'unpaid' },
+  { id: '#KW-1040', name: 'Efua Darko',    product: 'Leather Sandals · Size 40', location: 'East Legon',    amount: 'GH₵ 120', status: 'pod'    },
+  { id: '#KW-1039', name: 'Ama Boateng',   product: 'Dashiki Shirt · L, Navy',   location: 'Takoradi',      amount: 'GH₵ 85',  status: 'paid'   },
 ]
 
 const pricingFeatures = [
@@ -147,7 +202,6 @@ const testimonials = [
     <!-- ── NAV ─────────────────────────────────────── -->
     <nav class="nav">
       <div class="nav-inner">
-        <!-- Logo -->
         <div class="nav-logo">
           <div class="nav-logo-icon">
             <img src="/images/logo_kweek.png" alt="Kweek" class="nav-logo-img" />
@@ -156,55 +210,46 @@ const testimonials = [
           <span class="nav-badge">beta</span>
         </div>
 
-        <!-- Desktop links -->
         <ul class="nav-links">
-          <li><a href="#how">How it works</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#how"      @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a></li>
+          <li><a href="#features" @click.prevent="document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a></li>
+          <li><a href="#pricing"  @click.prevent="document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a></li>
         </ul>
 
-        <!-- Desktop actions -->
         <div class="nav-actions">
           <button class="nav-theme-btn" @click="toggleTheme" :title="isDark ? 'Light mode' : 'Dark mode'">
             <Sun  v-if="isDark"  :size="14" :stroke-width="1.8" />
             <Moon v-else         :size="14" :stroke-width="1.8" />
           </button>
-          <button class="btn-ghost-sm" @click="router.push({ name: 'Login' })">
-            Sign in
-          </button>
-          <a href="#waitlist" class="btn-primary btn--sm">
+          <!-- Sign in hidden during waitlist phase -->
+          <button class="btn-primary btn--sm" @click="scrollToWaitlist">
             Get early access
             <ArrowRight :size="12" :stroke-width="2" />
-          </a>
+          </button>
         </div>
 
-        <!-- Mobile hamburger -->
         <button class="nav-hamburger" @click="mobileNavOpen = !mobileNavOpen">
-          <XIcon    v-if="mobileNavOpen" :size="18" :stroke-width="1.8" />
-          <Menu     v-else               :size="18" :stroke-width="1.8" />
+          <XIcon v-if="mobileNavOpen" :size="18" :stroke-width="1.8" />
+          <Menu  v-else               :size="18" :stroke-width="1.8" />
         </button>
       </div>
 
-      <!-- Mobile drawer -->
       <Transition name="t-mobile-nav">
         <div v-if="mobileNavOpen" class="mobile-nav">
-          <a href="#how"      class="mobile-nav-link" @click="mobileNavOpen = false">How it works</a>
-          <a href="#features" class="mobile-nav-link" @click="mobileNavOpen = false">Features</a>
-          <a href="#pricing"  class="mobile-nav-link" @click="mobileNavOpen = false">Pricing</a>
+          <a href="#how"      class="mobile-nav-link" @click="scrollToWaitlist">How it works</a>
+          <a href="#features" class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a>
+          <a href="#pricing"  class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a>
           <div class="mobile-nav-divider" />
           <div class="mobile-nav-actions">
-            <button class="nav-theme-btn" @click="toggleTheme">
+            <button class="nav-theme-btn nav-theme-btn--wide" @click="toggleTheme">
               <Sun  v-if="isDark"  :size="14" :stroke-width="1.8" />
               <Moon v-else         :size="14" :stroke-width="1.8" />
               {{ isDark ? 'Light mode' : 'Dark mode' }}
             </button>
-            <button class="btn-ghost-sm w-full" @click="router.push({ name: 'Login' })">
-              Sign in
-            </button>
-            <a href="#waitlist" class="btn-primary btn--full" @click="mobileNavOpen = false">
+            <button class="btn-primary btn--full" @click="scrollToWaitlist">
               Get early access
               <ArrowRight :size="13" :stroke-width="2" />
-            </a>
+            </button>
           </div>
         </div>
       </Transition>
@@ -213,30 +258,27 @@ const testimonials = [
     <!-- ── HERO ────────────────────────────────────── -->
     <section class="hero">
       <div class="hero-grid" aria-hidden="true" />
-
       <div class="hero-inner">
-        <!-- Eyebrow -->
+
         <div class="hero-eyebrow">
-          <!-- <span class="eyebrow-dot" /> -->
           Built for social sellers in Ghana and West Africa
         </div>
 
-        <!-- Headline -->
         <h1 class="hero-title">
           Your orders.<br />
           <span class="hero-title-dim">Finally organised.</span>
         </h1>
 
         <p class="hero-sub">
-          Kweek is a simple workspace built for social sellers. You can list your products, take buyer orders, and track every payment without dealing with the usual WhatsApp chaos.
+          Kweek is a simple workspace built for social sellers. List your products, take buyer orders, and track every payment without dealing with the usual WhatsApp chaos.
         </p>
 
         <div class="hero-actions">
-          <a href="#waitlist" class="btn-primary btn--hero">
+          <button class="btn-primary btn--hero" @click="scrollToWaitlist">
             Get early access
             <ArrowRight :size="14" :stroke-width="2" />
-          </a>
-          <a href="#how" class="btn-outline">
+          </button>
+          <a href="#how" class="btn-outline" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">
             See how it works
           </a>
         </div>
@@ -253,12 +295,9 @@ const testimonials = [
         <!-- Dashboard preview -->
         <div class="preview reveal">
           <div class="preview-bar">
-            <div class="preview-dots">
-              <span /><span /><span />
-            </div>
+            <div class="preview-dots"><span /><span /><span /></div>
             <span class="preview-url">kweek.app/dashboard/orders</span>
           </div>
-
           <div class="preview-stats">
             <div class="stat-item">
               <p class="stat-label">Orders today</p>
@@ -277,7 +316,6 @@ const testimonials = [
               <p class="stat-value">GH₵ 3,820</p>
             </div>
           </div>
-
           <div class="preview-table-wrap">
             <div class="pt-head">
               <span>Order</span>
@@ -335,20 +373,18 @@ const testimonials = [
             Social selling works. The chaos that comes with it doesn't.
           </p>
         </div>
-
         <div class="pain-grid">
           <div
             v-for="(p, i) in [
-              { title: 'DMs everywhere',        desc: 'Orders buried in 40 conversations. You cannot remember who paid, who is waiting, who cancelled.' },
-              { title: 'Screenshot overload',   desc: 'Payment proofs in your camera roll. Addresses in voice notes. Sizes in DMs from 3 weeks ago.' },
-              { title: 'Same questions daily',  desc: 'What is your account? How much to deliver? The same five questions repeated to every customer.' },
+              { title: 'DMs everywhere',         desc: 'Orders buried in 40 conversations. You cannot remember who paid, who is waiting, who cancelled.' },
+              { title: 'Screenshot overload',    desc: 'Payment proofs in your camera roll. Addresses in voice notes. Sizes in DMs from 3 weeks ago.' },
+              { title: 'Same questions daily',   desc: 'What is your account? How much to deliver? The same five questions repeated to every customer.' },
               { title: 'Orders falling through', desc: 'A customer ordered 4 days ago. You forgot. Now they are upset and you have lost the sale.' },
             ]"
             :key="p.title"
             class="pain-item reveal"
             :style="{ '--delay': `${i * 80}ms` }"
           >
-            <!-- <div class="pain-line" /> -->
             <div>
               <p class="pain-title">{{ p.title }}</p>
               <p class="pain-desc">{{ p.desc }}</p>
@@ -365,10 +401,9 @@ const testimonials = [
           <p class="section-eyebrow">How it works</p>
           <h2 class="section-title">Three steps. That's it.</h2>
           <p class="section-sub">
-           You can keep your current workflow while completely eliminating the usual chaos.
+            You can keep your current workflow while completely eliminating the usual chaos.
           </p>
         </div>
-
         <div class="steps">
           <div
             v-for="(step, i) in steps"
@@ -399,10 +434,9 @@ const testimonials = [
           <p class="section-eyebrow">Features</p>
           <h2 class="section-title">Everything you actually need.</h2>
           <p class="section-sub">
-            We provide four essential features designed to eliminate distractions and the need for multiple unnecessary subscriptions.
+            Four essential features designed to eliminate distractions and unnecessary subscriptions.
           </p>
         </div>
-
         <div class="features-grid">
           <div
             v-for="(f, i) in features"
@@ -428,7 +462,7 @@ const testimonials = [
             <p class="section-eyebrow">Shareable storefront</p>
             <h2 class="callout-title">One link.<br />Every channel.</h2>
             <p class="callout-desc">
-              Every product you list features a professional, streamlined checkout page. Share your unique link across platforms like WhatsApp, Instagram, and TikTok to enable customers to complete purchases directly without the need for manual coordination.
+              Every product you list features a professional, streamlined checkout page. Share your unique link across platforms like WhatsApp, Instagram, and TikTok to enable customers to complete purchases directly without manual coordination.
             </p>
             <div class="link-demo">
               <span class="link-demo-url">kweek.app/store/amas-boutique</span>
@@ -442,7 +476,6 @@ const testimonials = [
               <span class="channel-pill">TikTok</span>
             </div>
           </div>
-
           <div class="callout-right">
             <div class="product-mock">
               <div class="mock-img-area">
@@ -479,7 +512,6 @@ const testimonials = [
             Early users get full access at no cost during beta. Help us shape what this becomes.
           </p>
         </div>
-
         <div class="pricing-wrap reveal">
           <div class="pricing-card">
             <div class="pricing-top">
@@ -489,11 +521,10 @@ const testimonials = [
                 <p class="pricing-note">Honest pricing announced before public launch.</p>
               </div>
               <div class="pricing-badge">
-                <AlarmClockCheck :size="16" :stroke-width="2" />
+                <AlarmClockCheck :size="14" :stroke-width="2" />
                 Limited spots
               </div>
             </div>
-
             <ul class="pricing-list">
               <li v-for="item in pricingFeatures" :key="item">
                 <div class="check-icon">
@@ -502,20 +533,14 @@ const testimonials = [
                 {{ item }}
               </li>
             </ul>
-
-            <a href="#waitlist" class="btn-primary btn--full">
+            <button class="btn-primary btn--full" @click="scrollToWaitlist">
               Join the beta
               <ArrowRight :size="13" :stroke-width="2" />
-            </a>
+            </button>
           </div>
-
           <div class="pricing-aside">
             <p class="aside-label">What sellers are saying</p>
-            <div
-              v-for="t in testimonials"
-              :key="t.name"
-              class="testimonial"
-            >
+            <div v-for="t in testimonials" :key="t.name" class="testimonial">
               <p class="testimonial-text">{{ t.text }}</p>
               <div class="testimonial-author">
                 <div class="t-avatar">{{ t.avatar }}</div>
@@ -545,8 +570,11 @@ const testimonials = [
               <input
                 v-model="email"
                 type="email"
+                inputmode="email"
+                autocomplete="email"
                 placeholder="your@email.com"
                 class="waitlist-input"
+                :class="{ 'waitlist-input--error': formError }"
                 required
               />
               <button
@@ -560,6 +588,9 @@ const testimonials = [
                 </span>
               </button>
             </div>
+            <p v-if="formError" class="waitlist-error">
+              {{ formError }}
+            </p>
           </template>
 
           <div v-else class="waitlist-success">
@@ -605,7 +636,6 @@ const testimonials = [
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── MONO ────────────────────────────────────────────── */
 .mono { font-family: 'JetBrains Mono', monospace; }
 
 /* ── BUTTONS ─────────────────────────────────────────── */
@@ -629,10 +659,10 @@ const testimonials = [
   white-space: nowrap;
   transition: background 0.15s, opacity 0.15s;
 }
-.btn-primary:hover { background: var(--brand-hover); }
+.btn-primary:hover   { background: var(--brand-hover); }
 .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn--sm   { height: 34px; padding: 0 14px; font-size: 12px; }
-.btn--hero { height: 44px; padding: 0 22px; font-size: 14px; font-weight: 500; }
+.btn--hero { height: 44px; padding: 0 22px; font-size: 14px; }
 .btn--full { width: 100%; height: 44px; font-size: 13px; }
 
 .btn-outline {
@@ -644,7 +674,6 @@ const testimonials = [
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 400;
   color: var(--text-secondary);
   cursor: pointer;
   text-decoration: none;
@@ -695,36 +724,23 @@ const testimonials = [
   align-items: center;
   gap: 24px;
 }
-
 .nav-logo {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  text-decoration: none;
 }
 .nav-logo-icon {
   width: 28px;
   height: 28px;
-  /* border-radius: 7px; */
-  /* background: var(--brand); */
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.nav-logo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.nav-logo-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: -0.4px;
-}
+.nav-logo-img     { width: 100%; height: 100%; object-fit: contain; }
+.nav-logo-name    { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.4px; }
 .nav-badge {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -736,7 +752,6 @@ const testimonials = [
   color: var(--text-muted);
   letter-spacing: 0.3px;
 }
-
 .nav-links {
   display: flex;
   align-items: center;
@@ -748,20 +763,18 @@ const testimonials = [
 }
 .nav-links a {
   font-size: 13px;
-  font-weight: 400;
   color: var(--text-muted);
   text-decoration: none;
   transition: color 0.15s;
+  cursor: pointer;
 }
 .nav-links a:hover { color: var(--text-primary); }
-
 .nav-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
-
 .nav-theme-btn {
   width: 34px;
   height: 34px;
@@ -776,11 +789,16 @@ const testimonials = [
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
 }
-.nav-theme-btn:hover {
-  background: var(--bg-surface);
-  color: var(--text-primary);
+.nav-theme-btn:hover { background: var(--bg-surface); color: var(--text-primary); }
+.nav-theme-btn--wide {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: inherit;
 }
-
 .nav-hamburger {
   display: none;
   width: 36px;
@@ -795,8 +813,6 @@ const testimonials = [
   margin-left: auto;
   flex-shrink: 0;
 }
-
-/* Mobile nav drawer */
 .mobile-nav {
   border-top: 1px solid var(--border);
   background: var(--bg-page);
@@ -814,28 +830,15 @@ const testimonials = [
   text-decoration: none;
   border-bottom: 1px solid var(--border);
   transition: color 0.15s;
+  cursor: pointer;
 }
-.mobile-nav-link:hover { color: var(--text-primary); }
-.mobile-nav-divider { height: 1px; background: var(--border); margin: 10px 0; }
-.mobile-nav-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.mobile-nav-actions .nav-theme-btn {
-  width: 100%;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 0 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-family: inherit;
-}
-
+.mobile-nav-link:hover  { color: var(--text-primary); }
+.mobile-nav-divider     { height: 1px; background: var(--border); margin: 10px 0; }
+.mobile-nav-actions     { display: flex; flex-direction: column; gap: 8px; }
 .t-mobile-nav-enter-active,
 .t-mobile-nav-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .t-mobile-nav-enter-from,
-.t-mobile-nav-leave-to { opacity: 0; transform: translateY(-6px); }
+.t-mobile-nav-leave-to     { opacity: 0; transform: translateY(-6px); }
 
 /* ── HERO ────────────────────────────────────────────── */
 .hero {
@@ -862,7 +865,6 @@ const testimonials = [
   align-items: center;
   text-align: center;
 }
-
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -870,14 +872,12 @@ const testimonials = [
   background: var(--bg-page);
   border: 2px solid var(--border);
   border-radius: 100px;
-  padding: 5px 14px 5px 10px;
+  padding: 5px 14px;
   margin-bottom: 32px;
   font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
 }
-
-
 .hero-title {
   font-size: clamp(38px, 5.5vw, 64px);
   font-weight: 600;
@@ -888,16 +888,13 @@ const testimonials = [
   max-width: 680px;
 }
 .hero-title-dim { color: var(--text-disabled); }
-
 .hero-sub {
   font-size: 16px;
-  font-weight: 400;
   color: var(--text-muted);
   line-height: 1.7;
   max-width: 460px;
   margin-bottom: 36px;
 }
-
 .hero-actions {
   display: flex;
   align-items: center;
@@ -906,7 +903,6 @@ const testimonials = [
   justify-content: center;
   margin-bottom: 16px;
 }
-
 .hero-trust {
   display: flex;
   align-items: center;
@@ -928,10 +924,7 @@ const testimonials = [
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow:
-    0 0 0 1px var(--border),
-    0 8px 48px rgba(0,0,0,0.08),
-    0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 0 0 1px var(--border), 0 8px 48px rgba(0,0,0,0.08);
 }
 .preview-bar {
   background: var(--bg-surface);
@@ -941,16 +934,8 @@ const testimonials = [
   align-items: center;
   gap: 10px;
 }
-.preview-dots {
-  display: flex;
-  gap: 5px;
-}
-.preview-dots span {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--border-strong);
-}
+.preview-dots        { display: flex; gap: 5px; }
+.preview-dots span   { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); }
 .preview-url {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
@@ -960,16 +945,12 @@ const testimonials = [
   border-radius: 5px;
   padding: 3px 10px;
 }
-
 .preview-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   border-bottom: 1px solid var(--border);
 }
-.stat-item {
-  padding: 14px 18px;
-  border-right: 1px solid var(--border);
-}
+.stat-item            { padding: 14px 18px; border-right: 1px solid var(--border); }
 .stat-item:last-child { border-right: none; }
 .stat-label {
   font-size: 10px;
@@ -987,8 +968,7 @@ const testimonials = [
   color: var(--text-primary);
   line-height: 1;
 }
-
-.preview-table-wrap { overflow-x: auto; }
+.preview-table-wrap  { overflow-x: auto; }
 .pt-head {
   display: grid;
   grid-template-columns: 96px 1fr 1fr 96px 88px 110px;
@@ -1025,7 +1005,6 @@ const testimonials = [
 .pt-location { font-size: 12px; color: var(--text-muted); }
 .pt-amount   { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: var(--text-primary); }
 .ta-r        { text-align: right; }
-
 .st-badge {
   display: inline-block;
   font-size: 10px;
@@ -1040,20 +1019,8 @@ const testimonials = [
 .st-badge--pod    { background: var(--bg-surface);        color: var(--text-muted);          border-color: var(--border); }
 
 /* ── PROOF BAR ───────────────────────────────────────── */
-.proof-bar {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  /* background: var(--bg-surface); */
-  padding: 14px 32px;
-}
-.proof-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
+.proof-bar   { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 14px 32px; }
+.proof-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .proof-stars { display: flex; gap: 2px; color: #D97706; font-size: 12px; }
 .proof-text  { font-size: 12px; color: var(--text-secondary); }
 .proof-text strong { color: var(--text-primary); font-weight: 600; }
@@ -1061,11 +1028,10 @@ const testimonials = [
 .proof-quote { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
 /* ── SECTIONS ────────────────────────────────────────── */
-.section { padding: 88px 32px; background: var(--bg-page); }
+.section      { padding: 88px 32px; background: var(--bg-page); }
 .section--alt { background: var(--bg-surface); }
 .section-inner { max-width: 1100px; margin: 0 auto; }
 .section-head  { margin-bottom: 52px; max-width: 560px; }
-
 .section-eyebrow {
   font-size: 10px;
   font-weight: 600;
@@ -1082,13 +1048,9 @@ const testimonials = [
   color: var(--text-primary);
   margin-bottom: 12px;
 }
-.section-sub {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1.7;
-}
+.section-sub { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
 
-/* ── PAIN GRID ───────────────────────────────────────── */
+/* ── PAIN ────────────────────────────────────────────── */
 .pain-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1099,44 +1061,15 @@ const testimonials = [
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 22px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
   transition: border-color 0.15s;
 }
 .pain-item:hover { border-color: var(--border-strong); }
-.pain-line {
-  width: 3px;
-  height: 36px;
-  border-radius: 2px;
-  background: var(--border-strong);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.pain-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 5px;
-  letter-spacing: -0.1px;
-}
-.pain-desc {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
+.pain-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.1px; }
+.pain-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── STEPS ───────────────────────────────────────────── */
-.steps {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.step {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-}
+.steps { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.step  { display: flex; border-bottom: 1px solid var(--border); }
 .step:last-child { border-bottom: none; }
 .step-num {
   font-family: 'JetBrains Mono', monospace;
@@ -1163,16 +1096,15 @@ const testimonials = [
   height: 36px;
   border-radius: 9px;
   border: 1px solid var(--border);
-  /* background: var(--bg-surface); */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: var(--text-secondary);
 }
-.step-content { flex: 1; }
-.step-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.2px; }
-.step-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 12px; }
+.step-content  { flex: 1; }
+.step-title    { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.2px; }
+.step-desc     { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 12px; }
 .step-tag {
   display: inline-block;
   font-family: 'JetBrains Mono', monospace;
@@ -1185,11 +1117,7 @@ const testimonials = [
 }
 
 /* ── FEATURES ────────────────────────────────────────── */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .feature-card {
   background: var(--bg-page);
   border: 1px solid var(--border);
@@ -1203,7 +1131,6 @@ const testimonials = [
   height: 36px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  /* background: var(--bg-surface); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1214,27 +1141,9 @@ const testimonials = [
 .feature-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── LINK CALLOUT ────────────────────────────────────── */
-.link-callout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
-  align-items: center;
-}
-.callout-left {}
-.callout-title {
-  font-size: clamp(24px, 3.5vw, 32px);
-  font-weight: 600;
-  letter-spacing: -0.8px;
-  line-height: 1.15;
-  color: var(--text-primary);
-  margin-bottom: 14px;
-}
-.callout-desc {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1.7;
-  margin-bottom: 20px;
-}
+.link-callout { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.callout-title { font-size: clamp(24px, 3.5vw, 32px); font-weight: 600; letter-spacing: -0.8px; line-height: 1.15; color: var(--text-primary); margin-bottom: 14px; }
+.callout-desc  { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
 .link-demo {
   display: inline-flex;
   align-items: center;
@@ -1245,11 +1154,7 @@ const testimonials = [
   padding: 9px 12px;
   margin-bottom: 18px;
 }
-.link-demo-url {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--brand);
-}
+.link-demo-url { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--brand); }
 .link-demo-tag {
   font-size: 10px;
   font-weight: 500;
@@ -1260,7 +1165,7 @@ const testimonials = [
   padding: 2px 7px;
 }
 .channel-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.channel-pill {
+.channel-pill  {
   font-size: 11px;
   font-weight: 500;
   padding: 4px 11px;
@@ -1269,9 +1174,7 @@ const testimonials = [
   border: 1px solid var(--border);
   color: var(--text-secondary);
 }
-
-/* Product mock */
-.callout-right { display: flex; justify-content: center; }
+.callout-right   { display: flex; justify-content: center; }
 .product-mock {
   background: var(--bg-page);
   border: 1px solid var(--border);
@@ -1296,16 +1199,9 @@ const testimonials = [
   justify-content: center;
   color: var(--border-strong);
 }
-.mock-body { padding: 18px; }
-.mock-name  { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.2px; }
-.mock-price {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
-}
+.mock-body      { padding: 18px; }
+.mock-name      { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.2px; }
+.mock-price     { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.5px; }
 .mock-desc-text { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
 .mock-variants  { display: flex; gap: 6px; margin-bottom: 14px; }
 .mock-variant {
@@ -1320,13 +1216,8 @@ const testimonials = [
   font-weight: 500;
   color: var(--text-muted);
   background: var(--bg-surface);
-  cursor: pointer;
 }
-.mock-variant--active {
-  border-color: var(--brand);
-  background: var(--brand);
-  color: #fff;
-}
+.mock-variant--active { border-color: var(--brand); background: var(--brand); color: #fff; }
 .mock-order-btn {
   width: 100%;
   height: 38px;
@@ -1349,7 +1240,6 @@ const testimonials = [
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 400;
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
@@ -1358,43 +1248,12 @@ const testimonials = [
 .mock-wa-btn:hover { border-color: var(--border-strong); }
 
 /* ── PRICING ─────────────────────────────────────────── */
-.pricing-wrap {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: start;
-}
-.pricing-card {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 28px;
-}
-.pricing-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 28px;
-  gap: 12px;
-}
-.pricing-tier {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-.pricing-price {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 42px;
-  font-weight: 600;
-  letter-spacing: -2px;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: 6px;
-}
-.pricing-note { font-size: 11px; color: var(--text-muted); }
+.pricing-wrap  { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.pricing-card  { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+.pricing-top   { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 12px; }
+.pricing-tier  { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+.pricing-price { font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 600; letter-spacing: -2px; color: var(--text-primary); line-height: 1; margin-bottom: 6px; }
+.pricing-note  { font-size: 11px; color: var(--text-muted); }
 .pricing-badge {
   display: inline-flex;
   align-items: center;
@@ -1405,73 +1264,24 @@ const testimonials = [
   border-radius: 100px;
   white-space: nowrap;
   flex-shrink: 0;
+  background: var(--status-pending-bg);
+  color: var(--status-pending-text);
 }
-.pricing-list {
-  list-style: none;
-  margin: 0 0 28px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.pricing-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.check-icon { color: var(--status-paid-text); flex-shrink: 0; margin-top: 1px; }
-
-/* Testimonials */
+.pricing-list  { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.pricing-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+.check-icon    { color: var(--status-paid-text); flex-shrink: 0; margin-top: 1px; }
 .pricing-aside { display: flex; flex-direction: column; gap: 10px; }
-.aside-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-.testimonial {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px;
-}
-.testimonial-text {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.65;
-  margin-bottom: 14px;
-}
+.aside-label   { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.testimonial   { background: var(--bg-page); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.testimonial-text   { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 14px; }
 .testimonial-author { display: flex; align-items: center; gap: 10px; }
-.t-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-.t-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-.t-role { font-size: 11px; color: var(--text-muted); }
+.t-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
+.t-name   { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.t-role   { font-size: 11px; color: var(--text-muted); }
 
 /* ── CTA SECTION ─────────────────────────────────────── */
-.cta-section {
-  background: #0F1117;
-  padding: 100px 32px;
-  text-align: center;
-}
-.cta-inner { max-width: 540px; margin: 0 auto; }
-
+.cta-section { background: #0F1117; padding: 100px 32px; text-align: center; }
+.cta-inner   { max-width: 540px; margin: 0 auto; }
 .cta-eyebrow {
   font-size: 10px;
   font-weight: 600;
@@ -1488,47 +1298,49 @@ const testimonials = [
   margin-bottom: 14px;
   line-height: 1.1;
 }
-.cta-sub {
-  font-size: 14px;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.7;
-  margin-bottom: 40px;
-}
+.cta-sub  { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.7; margin-bottom: 40px; }
+.cta-note { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 14px; }
 
-/* Waitlist form */
-.waitlist-form { max-width: 440px; margin: 0 auto 14px; }
+/* ── WAITLIST FORM ───────────────────────────────────── */
+.waitlist-form { max-width: 460px; margin: 0 auto; }
 
 .waitlist-form-row {
   display: flex;
   gap: 8px;
+  align-items: stretch;     /* key fix — both children same height */
 }
 
 .waitlist-input {
   flex: 1;
-  height: 60px;
-  width: 100%;
+  height: 48px;             /* fixed — matches submit button */
+  min-width: 0;
   padding: 0 16px;
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 6px;
-  font-size: 19px;
+  border-radius: 8px;
+  font-size: 15px;
   color: #F9FAFB;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s;
-  min-width: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .waitlist-input::placeholder { color: rgba(255,255,255,0.3); }
-.waitlist-input:focus { border-color: rgba(255,255,255,0.35); }
+.waitlist-input:focus {
+  border-color: rgba(255,255,255,0.35);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.25);
+}
+.waitlist-input--error {
+  border-color: rgba(239,68,68,0.6);
+}
 
 .waitlist-submit {
-  height: 48px;
+  height: 48px;             /* matches input exactly */
   padding: 0 22px;
   background: var(--brand);
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
@@ -1537,7 +1349,14 @@ const testimonials = [
   transition: background 0.15s, opacity 0.15s;
 }
 .waitlist-submit:hover:not(:disabled) { background: var(--brand-hover); }
-.waitlist-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+.waitlist-submit:disabled             { opacity: 0.55; cursor: not-allowed; }
+
+.waitlist-error {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #FCA5A5;
+  text-align: left;
+}
 
 .waitlist-success {
   display: flex;
@@ -1552,22 +1371,10 @@ const testimonials = [
   border: 1px solid rgba(110,231,183,0.2);
   border-radius: 8px;
 }
-.cta-note { font-size: 11px; color: rgba(255,255,255,0.25); }
 
 /* Loading dots */
-.loading-dots {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  justify-content: center;
-}
-.loading-dots span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #fff;
-  animation: dot-pulse 1.2s ease-in-out infinite;
-}
+.loading-dots        { display: flex; gap: 4px; align-items: center; justify-content: center; }
+.loading-dots span   { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: dot-pulse 1.2s ease-in-out infinite; }
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dot-pulse {
@@ -1576,63 +1383,17 @@ const testimonials = [
 }
 
 /* ── FOOTER ──────────────────────────────────────────── */
-.footer {
-  border-top: 1px solid var(--border);
-  background: var(--bg-page);
-  padding: 20px 32px;
-}
-.footer-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.footer-logo-icon {
-  width: 22px;
-  height: 22px;
-  /* border-radius: 5px; */
-  /* background: var(--brand); */
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.footer-logo-img { width: 100%; height: 100%; object-fit: contain; }
-.footer-logo-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-}
-.footer-v {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--text-disabled);
-}
-.footer-links {
-  display: flex;
-  gap: 20px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.footer-links a {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.15s;
-}
+.footer       { border-top: 1px solid var(--border); background: var(--bg-page); padding: 20px 32px; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.footer-logo  { display: flex; align-items: center; gap: 8px; }
+.footer-logo-icon  { width: 22px; height: 22px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.footer-logo-img   { width: 100%; height: 100%; object-fit: contain; }
+.footer-logo-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+.footer-v          { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-disabled); }
+.footer-links      { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+.footer-links a    { font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
 .footer-links a:hover { color: var(--text-secondary); }
-.footer-copy { font-size: 11px; color: var(--text-disabled); }
+.footer-copy       { font-size: 11px; color: var(--text-disabled); }
 
 /* ── SCROLL REVEAL ───────────────────────────────────── */
 .reveal {
@@ -1641,45 +1402,46 @@ const testimonials = [
   transition: opacity 0.5s ease, transform 0.5s ease;
   transition-delay: var(--delay, 0ms);
 }
-.reveal.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
+.reveal.revealed { opacity: 1; transform: translateY(0); }
 
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 900px) {
-  .features-grid     { grid-template-columns: 1fr 1fr; }
-  .pricing-wrap      { grid-template-columns: 1fr; }
-  .link-callout      { grid-template-columns: 1fr; gap: 36px; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .pricing-wrap  { grid-template-columns: 1fr; }
+  .link-callout  { grid-template-columns: 1fr; gap: 36px; }
 }
 
 @media (max-width: 768px) {
-  .nav-links         { display: none; }
-  .nav-actions       { display: none; }
-  .nav-hamburger     { display: flex; }
-  .hero              { padding: 60px 20px 52px; }
-  .section           { padding: 64px 20px; }
-  .proof-bar         { padding: 14px 20px; }
-  .pain-grid         { grid-template-columns: 1fr; }
-  .preview-stats     { grid-template-columns: repeat(2, 1fr); }
-  .pt-head, .pt-row  { grid-template-columns: 88px 1fr 80px 100px; }
-  .cta-section       { padding: 72px 20px; }
-  .footer            { padding: 16px 20px; }
-  .footer-inner      { flex-direction: column; align-items: flex-start; gap: 14px; }
-  .hide-sm           { display: none; }
+  .nav-links     { display: none; }
+  .nav-actions   { display: none; }
+  .nav-hamburger { display: flex; }
+  .hero          { padding: 60px 20px 52px; }
+  .section       { padding: 64px 20px; }
+  .proof-bar     { padding: 14px 20px; }
+  .pain-grid     { grid-template-columns: 1fr; }
+  .preview-stats { grid-template-columns: repeat(2, 1fr); }
+  .pt-head, .pt-row { grid-template-columns: 88px 1fr 80px 100px; }
+  .cta-section   { padding: 72px 20px; }
+  .footer        { padding: 16px 20px; }
+  .footer-inner  { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .hide-sm       { display: none; }
 }
 
-@media (max-width: 600px) {
+/* ── Mobile waitlist form fix ────────────────────────── */
+@media (max-width: 560px) {
   .waitlist-form-row {
-    flex-direction: column;
+    flex-direction: column;  /* stack vertically */
     gap: 10px;
+  }
+  .waitlist-input {
+    width: 100%;
+    font-size: 16px;         /* prevents iOS zoom on focus */
   }
   .waitlist-submit {
     width: 100%;
-    height: 48px;
+    height: 50px;
+    font-size: 15px;
   }
-  .hero-title    { font-size: 34px; }
-  .hero-sub      { font-size: 14px; }
 }
 
 @media (max-width: 480px) {
