@@ -4,15 +4,8 @@ import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
   Link2, PenLine, Wallet, CheckCircle2, Zap,
   AlarmClockCheck, ShieldCheck, Sparkles,
-  Sun, Moon, Menu, X as XIcon,
+  Menu, X as XIcon,
 } from 'lucide-vue-next'
-
-// ── Theme ─────────────────────────────────────────────
-const isDark = ref(document.documentElement.classList.contains('dark'))
-function toggleTheme() {
-  isDark.value = document.documentElement.classList.toggle('dark')
-  localStorage.setItem('kweek-theme', isDark.value ? 'dark' : 'light')
-}
 
 // ── Mobile nav ────────────────────────────────────────
 const mobileNavOpen = ref(false)
@@ -23,7 +16,6 @@ const submitted   = ref(false)
 const submitting  = ref(false)
 const formError   = ref('')
 
-// Scroll any CTA to the form
 function scrollToWaitlist(e) {
   e?.preventDefault()
   mobileNavOpen.value = false
@@ -32,56 +24,29 @@ function scrollToWaitlist(e) {
 
 async function submitWaitlist() {
   formError.value = ''
-
-  // Basic client-side email check before hitting the network
   const emailVal = email.value.trim()
-  if (!emailVal) {
-    formError.value = 'Please enter your email address.'
-    return
-  }
+  if (!emailVal) { formError.value = 'Please enter your email address.'; return }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(emailVal)) {
-    formError.value = 'Please enter a valid email address.'
-    return
-  }
-
+  if (!emailRegex.test(emailVal)) { formError.value = 'Please enter a valid email address.'; return }
   if (submitting.value) return
   submitting.value = true
-
   try {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/waitlist/`,
-      {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // No auth header — this is a public endpoint
-        // withCredentials not needed — no cookies on waitlist
-        body: JSON.stringify({
-          email:  emailVal,
-          source: 'landing_page',
-        }),
-      }
-    )
-
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/waitlist/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailVal, source: 'landing_page' }),
+    })
     if (!res.ok) {
-      // Parse FastAPI error detail
       const data = await res.json().catch(() => ({}))
       const detail = data?.detail
-      if (typeof detail === 'string') {
-        formError.value = detail
-      } else if (Array.isArray(detail)) {
-        formError.value = detail.map(e => e.msg).join(', ')
-      } else {
-        formError.value = 'Something went wrong. Please try again.'
-      }
+      if (typeof detail === 'string') formError.value = detail
+      else if (Array.isArray(detail)) formError.value = detail.map(e => e.msg).join(', ')
+      else formError.value = 'Something went wrong. Please try again.'
       return
     }
-
-    // Success — we don't need the response body
     submitted.value = true
-    email.value     = ''
+    email.value = ''
   } catch {
-    // Network failure — never expose raw errors to user
     formError.value = 'Unable to connect. Please check your connection and try again.'
   } finally {
     submitting.value = false
@@ -94,10 +59,7 @@ onMounted(() => {
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(el => {
-        if (el.isIntersecting) {
-          el.target.classList.add('revealed')
-          observer.unobserve(el.target)
-        }
+        if (el.isIntersecting) { el.target.classList.add('revealed'); observer.unobserve(el.target) }
       })
     },
     { threshold: 0.08, rootMargin: '0px 0px -32px 0px' }
@@ -109,59 +71,29 @@ onUnmounted(() => observer?.disconnect())
 // ── Static data ───────────────────────────────────────
 const steps = [
   {
-    num:   '1/',
-    title: 'List your product',
-    desc:  'Upload a photo, set your price, add size and color variants. You get a clean shareable link in under 60 seconds.',
-    tag:   'kweek.app/store/your-store',
-    icon:  Package,
+    num: '1/', title: 'List your product',
+    desc: 'Upload a photo, set your price, add size and color variants. You get a clean shareable link in under 60 seconds.',
+    tag: 'kweek.app/store/your-store', icon: Package,
   },
   {
-    num:   '2/',
-    title: 'Share the link anywhere',
-    desc:  'Drop it in your WhatsApp status, Instagram bio, or DM. Buyers open the page and order without messaging you first.',
-    tag:   'WhatsApp · Instagram · TikTok · Facebook',
-    icon:  Link2,
+    num: '2/', title: 'Share the link anywhere',
+    desc: 'Drop it in your WhatsApp status, Instagram bio, or DM. Buyers open the page and order without messaging you first.',
+    tag: 'WhatsApp · Instagram · TikTok · Facebook', icon: Link2,
   },
   {
-    num:   '3/',
-    title: 'Orders land in your dashboard',
-    desc:  'Buyer name, phone, location, quantity — all there automatically. Mark payment status. Add manual orders for DM customers.',
-    tag:   'Zero setup. Just works.',
-    icon:  ShoppingBag,
+    num: '3/', title: 'Orders land in your dashboard',
+    desc: 'Buyer name, phone, location, quantity — all there automatically. Mark payment status. Add manual orders for DM customers.',
+    tag: 'Zero setup. Just works.', icon: ShoppingBag,
   },
 ]
 
 const features = [
-  {
-    icon:  Package,
-    title: 'Product listings',
-    desc:  'Image, price, variants, availability status. One listing generates one shareable link, ready for every social channel.',
-  },
-  {
-    icon:  Link2,
-    title: 'Shareable product pages',
-    desc:  'A simple page that shows off the photo, price, and a buy button. Built to work perfectly for your WhatsApp status or Instagram bio.',
-  },
-  {
-    icon:  ShoppingBag,
-    title: 'Buyer order form',
-    desc:  'Buyers fill their name, phone, location and quantity. The order hits your dashboard instantly. No DMs required.',
-  },
-  {
-    icon:  PenLine,
-    title: 'Manual order entry',
-    desc:  'Got a DM sale or an offline customer? Add the order yourself in seconds. Everything stays in one place.',
-  },
-  {
-    icon:  Wallet,
-    title: 'Payment tracking',
-    desc:  'Mark orders as unpaid, paid, or pay-on-delivery. Simple manual tracking that actually matches how sellers work.',
-  },
-  {
-    icon:  BadgeCheck,
-    title: 'Order dashboard',
-    desc:  'All your orders in one view. Search, filter by status, export to CSV. Built to handle the scale of social selling.',
-  },
+  { icon: Package,    title: 'Product listings',         desc: 'Image, price, variants, availability status. One listing generates one shareable link, ready for every social channel.' },
+  { icon: Link2,      title: 'Shareable product pages',  desc: 'A simple page that shows off the photo, price, and a buy button. Built to work perfectly for your WhatsApp status or Instagram bio.' },
+  { icon: ShoppingBag,title: 'Buyer order form',         desc: 'Buyers fill their name, phone, location and quantity. The order hits your dashboard instantly. No DMs required.' },
+  { icon: PenLine,    title: 'Manual order entry',       desc: 'Got a DM sale or an offline customer? Add the order yourself in seconds. Everything stays in one place.' },
+  { icon: Wallet,     title: 'Payment tracking',         desc: 'Mark orders as unpaid, paid, or pay-on-delivery. Simple manual tracking that actually matches how sellers work.' },
+  { icon: BadgeCheck, title: 'Order dashboard',          desc: 'All your orders in one view. Search, filter by status, export to CSV. Built to handle the scale of social selling.' },
 ]
 
 const mockOrders = [
@@ -181,18 +113,8 @@ const pricingFeatures = [
 ]
 
 const testimonials = [
-  {
-    text:   'I was tracking everything in my head and a notes app. I have been looking for something exactly like this.',
-    name:   'Akua D.',
-    role:   'Fashion seller, Kumasi',
-    avatar: 'A',
-  },
-  {
-    text:   'The DM chaos is real. Every week I lose track of who ordered what. Kweek solves that completely.',
-    name:   'Kwame B.',
-    role:   'Electronics reseller, Accra',
-    avatar: 'K',
-  },
+  { text: 'I was tracking everything in my head and a notes app. I have been looking for something exactly like this.', name: 'Akua D.', role: 'Fashion seller, Kumasi', avatar: 'A' },
+  { text: 'The DM chaos is real. Every week I lose track of who ordered what. Kweek solves that completely.', name: 'Kwame B.', role: 'Electronics reseller, Accra', avatar: 'K' },
 ]
 </script>
 
@@ -217,14 +139,11 @@ const testimonials = [
         </ul>
 
         <div class="nav-actions">
-          <button class="nav-theme-btn" @click="toggleTheme" :title="isDark ? 'Light mode' : 'Dark mode'">
-            <Sun  v-if="isDark"  :size="14" :stroke-width="1.8" />
-            <Moon v-else         :size="14" :stroke-width="1.8" />
+          <button class="btn-ghost-nav" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">
+            Contact sales
           </button>
-          <!-- Sign in hidden during waitlist phase -->
           <button class="btn-primary btn--sm" @click="scrollToWaitlist">
-            Get early access
-            <ArrowRight :size="12" :stroke-width="2" />
+            Get early access →
           </button>
         </div>
 
@@ -236,21 +155,14 @@ const testimonials = [
 
       <Transition name="t-mobile-nav">
         <div v-if="mobileNavOpen" class="mobile-nav">
-          <a href="#how"      class="mobile-nav-link" @click="scrollToWaitlist">How it works</a>
+          <a href="#how"      class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a>
           <a href="#features" class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a>
           <a href="#pricing"  class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a>
           <div class="mobile-nav-divider" />
-          <div class="mobile-nav-actions">
-            <button class="nav-theme-btn nav-theme-btn--wide" @click="toggleTheme">
-              <Sun  v-if="isDark"  :size="14" :stroke-width="1.8" />
-              <Moon v-else         :size="14" :stroke-width="1.8" />
-              {{ isDark ? 'Light mode' : 'Dark mode' }}
-            </button>
-            <button class="btn-primary btn--full" @click="scrollToWaitlist">
-              Get early access
-              <ArrowRight :size="13" :stroke-width="2" />
-            </button>
-          </div>
+          <button class="btn-primary btn--full" @click="scrollToWaitlist">
+            Get early access
+            <ArrowRight :size="13" :stroke-width="2" />
+          </button>
         </div>
       </Transition>
     </nav>
@@ -275,8 +187,7 @@ const testimonials = [
 
         <div class="hero-actions">
           <button class="btn-primary btn--hero" @click="scrollToWaitlist">
-            Get early access
-            <ArrowRight :size="14" :stroke-width="2" />
+            Get early access →
           </button>
           <a href="#how" class="btn-outline" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">
             See how it works
@@ -325,12 +236,7 @@ const testimonials = [
               <span class="ta-r">Amount</span>
               <span class="ta-r">Status</span>
             </div>
-            <div
-              v-for="(o, i) in mockOrders"
-              :key="o.id"
-              class="pt-row"
-              :style="{ '--delay': `${i * 70}ms` }"
-            >
+            <div v-for="(o, i) in mockOrders" :key="o.id" class="pt-row" :style="{ '--delay': `${i * 70}ms` }">
               <span class="pt-id">{{ o.id }}</span>
               <span class="pt-name">{{ o.name }}</span>
               <span class="pt-product hide-sm">{{ o.product }}</span>
@@ -369,26 +275,17 @@ const testimonials = [
           <h2 class="section-title">
             You're running a business<br />from your camera roll.
           </h2>
-          <p class="section-sub">
-            Social selling works. The chaos that comes with it doesn't.
-          </p>
+          <p class="section-sub">Social selling works. The chaos that comes with it doesn't.</p>
         </div>
         <div class="pain-grid">
-          <div
-            v-for="(p, i) in [
-              { title: 'DMs everywhere',         desc: 'Orders buried in 40 conversations. You cannot remember who paid, who is waiting, who cancelled.' },
-              { title: 'Screenshot overload',    desc: 'Payment proofs in your camera roll. Addresses in voice notes. Sizes in DMs from 3 weeks ago.' },
-              { title: 'Same questions daily',   desc: 'What is your account? How much to deliver? The same five questions repeated to every customer.' },
-              { title: 'Orders falling through', desc: 'A customer ordered 4 days ago. You forgot. Now they are upset and you have lost the sale.' },
-            ]"
-            :key="p.title"
-            class="pain-item reveal"
-            :style="{ '--delay': `${i * 80}ms` }"
-          >
-            <div>
-              <p class="pain-title">{{ p.title }}</p>
-              <p class="pain-desc">{{ p.desc }}</p>
-            </div>
+          <div v-for="(p, i) in [
+            { title: 'DMs everywhere',          desc: 'Orders buried in 40 conversations. You cannot remember who paid, who is waiting, who cancelled.' },
+            { title: 'Screenshot overload',     desc: 'Payment proofs in your camera roll. Addresses in voice notes. Sizes in DMs from 3 weeks ago.' },
+            { title: 'Same questions daily',    desc: 'What is your account? How much to deliver? The same five questions repeated to every customer.' },
+            { title: 'Orders falling through',  desc: 'A customer ordered 4 days ago. You forgot. Now they are upset and you have lost the sale.' },
+          ]" :key="p.title" class="pain-item reveal" :style="{ '--delay': `${i * 80}ms` }">
+            <p class="pain-title">{{ p.title }}</p>
+            <p class="pain-desc">{{ p.desc }}</p>
           </div>
         </div>
       </div>
@@ -400,17 +297,10 @@ const testimonials = [
         <div class="section-head reveal">
           <p class="section-eyebrow">How it works</p>
           <h2 class="section-title">Three steps. That's it.</h2>
-          <p class="section-sub">
-            You can keep your current workflow while completely eliminating the usual chaos.
-          </p>
+          <p class="section-sub">You can keep your current workflow while completely eliminating the usual chaos.</p>
         </div>
         <div class="steps">
-          <div
-            v-for="(step, i) in steps"
-            :key="step.num"
-            class="step reveal"
-            :style="{ '--delay': `${i * 100}ms` }"
-          >
+          <div v-for="(step, i) in steps" :key="step.num" class="step reveal" :style="{ '--delay': `${i * 100}ms` }">
             <div class="step-num">{{ step.num }}</div>
             <div class="step-body">
               <div class="step-icon-wrap">
@@ -433,17 +323,10 @@ const testimonials = [
         <div class="section-head reveal">
           <p class="section-eyebrow">Features</p>
           <h2 class="section-title">Everything you actually need.</h2>
-          <p class="section-sub">
-            Four essential features designed to eliminate distractions and unnecessary subscriptions.
-          </p>
+          <p class="section-sub">Four essential features designed to eliminate distractions and unnecessary subscriptions.</p>
         </div>
         <div class="features-grid">
-          <div
-            v-for="(f, i) in features"
-            :key="f.title"
-            class="feature-card reveal"
-            :style="{ '--delay': `${i * 60}ms` }"
-          >
+          <div v-for="(f, i) in features" :key="f.title" class="feature-card reveal" :style="{ '--delay': `${i * 60}ms` }">
             <div class="feature-icon">
               <component :is="f.icon" :size="16" :stroke-width="2" />
             </div>
@@ -508,9 +391,7 @@ const testimonials = [
         <div class="section-head reveal">
           <p class="section-eyebrow">Pricing</p>
           <h2 class="section-title">Free while we build together.</h2>
-          <p class="section-sub">
-            Early users get full access at no cost during beta. Help us shape what this becomes.
-          </p>
+          <p class="section-sub">Early users get full access at no cost during beta. Help us shape what this becomes.</p>
         </div>
         <div class="pricing-wrap reveal">
           <div class="pricing-card">
@@ -527,9 +408,7 @@ const testimonials = [
             </div>
             <ul class="pricing-list">
               <li v-for="item in pricingFeatures" :key="item">
-                <div class="check-icon">
-                  <CheckCircle2 :size="13" :stroke-width="2" />
-                </div>
+                <div class="check-icon"><CheckCircle2 :size="13" :stroke-width="2" /></div>
                 {{ item }}
               </li>
             </ul>
@@ -577,22 +456,13 @@ const testimonials = [
                 :class="{ 'waitlist-input--error': formError }"
                 required
               />
-              <button
-                type="submit"
-                class="waitlist-submit"
-                :disabled="submitting"
-              >
+              <button type="submit" class="waitlist-submit" :disabled="submitting">
                 <span v-if="!submitting">Get early access</span>
-                <span v-else class="loading-dots">
-                  <span /><span /><span />
-                </span>
+                <span v-else class="loading-dots"><span /><span /><span /></span>
               </button>
             </div>
-            <p v-if="formError" class="waitlist-error">
-              {{ formError }}
-            </p>
+            <p v-if="formError" class="waitlist-error">{{ formError }}</p>
           </template>
-
           <div v-else class="waitlist-success">
             <CheckCircle2 :size="16" :stroke-width="2" />
             You're on the list. We'll be in touch soon.
@@ -606,19 +476,31 @@ const testimonials = [
     <!-- ── FOOTER ───────────────────────────────────── -->
     <footer class="footer">
       <div class="footer-inner">
-        <div class="footer-logo">
-          <div class="footer-logo-icon">
-            <img src="/images/logo_kweek.png" alt="Kweek" class="footer-logo-img" />
-          </div>
-          <span class="footer-logo-name">Kweek</span>
-          <span class="footer-v">v0.1 · beta</span>
+        <div class="footer-col">
+          <p class="footer-col-label">Product</p>
+          <a href="#how" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a>
+          <a href="#features" @click.prevent="document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a>
+          <a href="#pricing" @click.prevent="document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a>
         </div>
-        <ul class="footer-links">
-          <li><a href="#">Privacy</a></li>
-          <li><a href="#">Terms</a></li>
-          <li><a href="mailto:hello@kweek.app">Contact</a></li>
-        </ul>
-        <p class="footer-copy">© 2025 Kweek</p>
+        <div class="footer-col">
+          <p class="footer-col-label">Legal</p>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Use</a>
+        </div>
+        <div class="footer-col">
+          <p class="footer-col-label">Contact</p>
+          <a href="mailto:hello@kweek.app">hello@kweek.app</a>
+        </div>
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <div class="footer-logo-icon">
+              <img src="/images/logo_kweek.png" alt="Kweek" class="footer-logo-img" />
+            </div>
+            <span class="footer-logo-name">Kweek</span>
+          </div>
+          <p class="footer-tagline">Efficiency is simplicity.</p>
+          <p class="footer-copy">© 2025 Kweek · v0.1 beta</p>
+        </div>
       </div>
     </footer>
 
@@ -626,9 +508,31 @@ const testimonials = [
 </template>
 
 <style scoped>
-/* ── TOKENS ──────────────────────────────────────────── */
+/* ── TOKENS (koomart palette) ────────────────────────── */
 .landing {
-  font-family: 'Geist', 'Inter', system-ui, sans-serif;
+  --bg-page:             #FAFAF9;
+  --bg-surface:          #F4F3F1;
+  --bg-card:             #FFFFFF;
+  --border:              #E5E4E1;
+  --border-strong:       #CFCECA;
+  --text-primary:        #1A1916;
+  --text-secondary:      #4A4945;
+  --text-muted:          #8A8984;
+  --text-disabled:       #BEBCB9;
+  --brand:               #1A1916;
+  --brand-hover:         #2D2C29;
+  --green-bg:            #EAF3DE;
+  --green-text:          #3B6D11;
+  --amber-bg:            #FAEEDA;
+  --amber-text:          #854F0B;
+  --gray-bg:             #F0EFED;
+  --gray-text:           #5F5E5A;
+  --status-paid-bg:      #EAF3DE;
+  --status-paid-text:    #3B6D11;
+  --status-pending-bg:   #FAEEDA;
+  --status-pending-text: #854F0B;
+
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
   font-size: 14px;
@@ -636,20 +540,18 @@ const testimonials = [
   -webkit-font-smoothing: antialiased;
 }
 
-.mono { font-family: 'JetBrains Mono', monospace; }
-
 /* ── BUTTONS ─────────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   height: 40px;
   padding: 0 18px;
-  background: var(--brand);
-  color: #fff;
+  background: var(--text-primary);
+  color: var(--bg-page);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -657,12 +559,12 @@ const testimonials = [
   font-family: inherit;
   letter-spacing: -0.1px;
   white-space: nowrap;
-  transition: background 0.15s, opacity 0.15s;
+  transition: opacity 0.15s;
 }
-.btn-primary:hover   { background: var(--brand-hover); }
-.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-primary:hover    { opacity: 0.82; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn--sm   { height: 34px; padding: 0 14px; font-size: 12px; }
-.btn--hero { height: 44px; padding: 0 22px; font-size: 14px; }
+.btn--hero { height: 44px; padding: 0 22px; font-size: 14px; font-weight: 500; }
 .btn--full { width: 100%; height: 44px; font-size: 13px; }
 
 .btn-outline {
@@ -672,7 +574,7 @@ const testimonials = [
   padding: 0 20px;
   background: none;
   border: 1px solid var(--border-strong);
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -682,35 +584,30 @@ const testimonials = [
 }
 .btn-outline:hover { color: var(--text-primary); border-color: var(--text-muted); }
 
-.btn-ghost-sm {
+.btn-ghost-nav {
   display: inline-flex;
   align-items: center;
   height: 34px;
   padding: 0 14px;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
-.btn-ghost-sm:hover {
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-  background: var(--bg-surface);
-}
-.btn-ghost-sm.w-full { width: 100%; justify-content: center; }
+.btn-ghost-nav:hover { color: var(--text-primary); border-color: var(--text-muted); }
 
 /* ── NAV ─────────────────────────────────────────────── */
 .nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: color-mix(in srgb, var(--bg-page) 88%, transparent);
+  background: rgba(250, 250, 249, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
@@ -718,279 +615,153 @@ const testimonials = [
 .nav-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 40px;
   height: 56px;
   display: flex;
   align-items: center;
   gap: 24px;
 }
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
+.nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .nav-logo-icon {
-  width: 28px;
-  height: 28px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  width: 28px; height: 28px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.nav-logo-img     { width: 100%; height: 100%; object-fit: contain; }
-.nav-logo-name    { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.4px; }
+.nav-logo-img  { width: 100%; height: 100%; object-fit: contain; }
+.nav-logo-name { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.4px; }
 .nav-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  letter-spacing: 0.3px;
+  font-size: 9px; font-weight: 500;
+  padding: 2px 6px; border-radius: 4px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  color: var(--text-muted); letter-spacing: 0.3px;
 }
 .nav-links {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1;
+  display: flex; align-items: center; gap: 28px;
+  list-style: none; margin: 0; padding: 0; flex: 1;
 }
 .nav-links a {
-  font-size: 13px;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.15s;
-  cursor: pointer;
+  font-size: 13px; font-weight: 400; color: var(--text-secondary);
+  text-decoration: none; transition: color 0.15s; cursor: pointer;
 }
 .nav-links a:hover { color: var(--text-primary); }
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.nav-theme-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: none;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-.nav-theme-btn:hover { background: var(--bg-surface); color: var(--text-primary); }
-.nav-theme-btn--wide {
-  width: 100%;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 0 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-family: inherit;
-}
+.nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .nav-hamburger {
-  display: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: none;
-  color: var(--text-muted);
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-left: auto;
-  flex-shrink: 0;
+  display: none; width: 36px; height: 36px; border-radius: 6px;
+  border: 1px solid var(--border); background: none; color: var(--text-muted);
+  align-items: center; justify-content: center; cursor: pointer; margin-left: auto; flex-shrink: 0;
 }
 .mobile-nav {
-  border-top: 1px solid var(--border);
-  background: var(--bg-page);
-  padding: 16px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  border-top: 1px solid var(--border); background: var(--bg-page);
+  padding: 16px 24px 20px; display: flex; flex-direction: column; gap: 2px;
 }
 .mobile-nav-link {
-  display: block;
-  padding: 10px 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border);
-  transition: color 0.15s;
-  cursor: pointer;
+  display: block; padding: 10px 0; font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); text-decoration: none;
+  border-bottom: 1px solid var(--border); transition: color 0.15s; cursor: pointer;
 }
-.mobile-nav-link:hover  { color: var(--text-primary); }
-.mobile-nav-divider     { height: 1px; background: var(--border); margin: 10px 0; }
-.mobile-nav-actions     { display: flex; flex-direction: column; gap: 8px; }
+.mobile-nav-link:hover { color: var(--text-primary); }
+.mobile-nav-divider { height: 1px; background: var(--border); margin: 10px 0; }
 .t-mobile-nav-enter-active,
 .t-mobile-nav-leave-active { transition: opacity 0.15s, transform 0.15s; }
 .t-mobile-nav-enter-from,
 .t-mobile-nav-leave-to     { opacity: 0; transform: translateY(-6px); }
 
 /* ── HERO ────────────────────────────────────────────── */
-.hero {
-  position: relative;
-  padding: 96px 32px 80px;
-  overflow: hidden;
-}
+.hero { position: relative; padding: 100px 40px 80px; overflow: hidden; }
 .hero-grid {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background-image:
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 52px 52px;
+  background-size: 48px 48px;
   opacity: 0.5;
   mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 30%, transparent 100%);
   pointer-events: none;
 }
 .hero-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  max-width: 1100px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: flex-start; text-align: left;
 }
 .hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-page);
-  border: 2px solid var(--border);
-  border-radius: 100px;
-  padding: 5px 14px;
-  margin-bottom: 32px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 100px;
+  padding: 5px 14px; margin-bottom: 32px;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--text-muted);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 .hero-title {
-  font-size: clamp(38px, 5.5vw, 64px);
+  font-size: clamp(44px, 6.5vw, 80px);
   font-weight: 600;
-  letter-spacing: -2px;
-  line-height: 1.06;
+  letter-spacing: -3px;
+  line-height: 1.0;
   color: var(--text-primary);
-  margin-bottom: 20px;
-  max-width: 680px;
+  margin-bottom: 22px;
+  max-width: 700px;
 }
 .hero-title-dim { color: var(--text-disabled); }
 .hero-sub {
-  font-size: 16px;
-  color: var(--text-muted);
-  line-height: 1.7;
-  max-width: 460px;
-  margin-bottom: 36px;
+  font-size: 16px; color: var(--text-secondary); line-height: 1.7;
+  max-width: 480px; margin-bottom: 36px; font-weight: 400;
 }
 .hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 16px;
 }
 .hero-trust {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-disabled);
-  margin-bottom: 60px;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text-disabled);
+  margin-bottom: 60px; flex-wrap: wrap;
 }
-.trust-check { color: var(--status-paid-text); flex-shrink: 0; }
+.trust-check { color: var(--green-text); flex-shrink: 0; }
 .trust-sep   { color: var(--border-strong); }
 
 /* ── PREVIEW ─────────────────────────────────────────── */
 .preview {
-  width: 100%;
-  max-width: 900px;
-  background: var(--bg-page);
+  width: 100%; max-width: 960px;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 0 1px var(--border), 0 8px 48px rgba(0,0,0,0.08);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 4px 40px rgba(0,0,0,0.07), 0 1px 0 rgba(0,0,0,0.04);
 }
 .preview-bar {
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  background: var(--bg-surface); border-bottom: 1px solid var(--border);
+  padding: 10px 16px; display: flex; align-items: center; gap: 10px;
 }
 .preview-dots        { display: flex; gap: 5px; }
 .preview-dots span   { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); }
 .preview-url {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 3px 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 5px; padding: 3px 10px;
 }
-.preview-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid var(--border);
-}
-.stat-item            { padding: 14px 18px; border-right: 1px solid var(--border); }
+.preview-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); }
+.stat-item { padding: 16px 20px; border-right: 1px solid var(--border); }
 .stat-item:last-child { border-right: none; }
 .stat-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 5px;
+  font-size: 10px; font-weight: 500; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px;
 }
 .stat-value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  color: var(--text-primary);
-  line-height: 1;
+  font-size: 18px; font-weight: 600; letter-spacing: -0.5px;
+  color: var(--text-primary); line-height: 1;
 }
-.preview-table-wrap  { overflow-x: auto; }
+.preview-table-wrap { overflow-x: auto; }
 .pt-head {
-  display: grid;
-  grid-template-columns: 96px 1fr 1fr 96px 88px 110px;
-  padding: 8px 18px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
+  display: grid; grid-template-columns: 96px 1fr 1fr 96px 88px 120px;
+  padding: 8px 20px; background: var(--bg-surface);
+  border-bottom: 1px solid var(--border); gap: 12px;
 }
 .pt-head span {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  font-size: 10px; font-weight: 500; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.8px;
 }
 .pt-row {
-  display: grid;
-  grid-template-columns: 96px 1fr 1fr 96px 88px 110px;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--border);
-  align-items: center;
-  gap: 12px;
+  display: grid; grid-template-columns: 96px 1fr 1fr 96px 88px 120px;
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  align-items: center; gap: 12px;
   animation: rowIn 0.3s ease both;
   animation-delay: var(--delay, 0ms);
 }
@@ -1004,22 +775,17 @@ const testimonials = [
 .pt-product  { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pt-location { font-size: 12px; color: var(--text-muted); }
 .pt-amount   { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: var(--text-primary); }
-.ta-r        { text-align: right; }
+.ta-r { text-align: right; }
 .st-badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 3px 9px;
-  border-radius: 5px;
-  border: 1px solid;
-  white-space: nowrap;
+  display: inline-block; font-size: 10px; font-weight: 500;
+  padding: 3px 9px; border-radius: 4px; border: 1px solid; white-space: nowrap;
 }
-.st-badge--paid   { background: var(--status-paid-bg);    color: var(--status-paid-text);    border-color: var(--status-paid-bg); }
-.st-badge--unpaid { background: var(--status-pending-bg); color: var(--status-pending-text); border-color: var(--status-pending-bg); }
-.st-badge--pod    { background: var(--bg-surface);        color: var(--text-muted);          border-color: var(--border); }
+.st-badge--paid   { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-bg); }
+.st-badge--unpaid { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-bg); }
+.st-badge--pod    { background: var(--bg-surface); color: var(--text-muted);  border-color: var(--border); }
 
 /* ── PROOF BAR ───────────────────────────────────────── */
-.proof-bar   { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 14px 32px; }
+.proof-bar   { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-surface); padding: 14px 40px; }
 .proof-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .proof-stars { display: flex; gap: 2px; color: #D97706; font-size: 12px; }
 .proof-text  { font-size: 12px; color: var(--text-secondary); }
@@ -1028,353 +794,191 @@ const testimonials = [
 .proof-quote { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
 /* ── SECTIONS ────────────────────────────────────────── */
-.section      { padding: 88px 32px; background: var(--bg-page); }
+.section      { padding: 96px 40px; background: var(--bg-page); }
 .section--alt { background: var(--bg-surface); }
 .section-inner { max-width: 1100px; margin: 0 auto; }
-.section-head  { margin-bottom: 52px; max-width: 560px; }
+.section-head  { margin-bottom: 52px; max-width: 580px; }
 .section-eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.4px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1.4px;
+  color: var(--text-muted); margin-bottom: 12px;
+  display: block;
 }
 .section-title {
-  font-size: clamp(24px, 3.5vw, 34px);
-  font-weight: 600;
-  letter-spacing: -0.8px;
-  line-height: 1.15;
-  color: var(--text-primary);
-  margin-bottom: 12px;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 600; letter-spacing: -1px; line-height: 1.12;
+  color: var(--text-primary); margin-bottom: 12px;
 }
-.section-sub { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+.section-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
 
 /* ── PAIN ────────────────────────────────────────────── */
-.pain-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
+.pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .pain-item {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 22px;
-  transition: border-color 0.15s;
+  background: var(--bg-card); padding: 28px 24px;
+  transition: background 0.15s;
 }
-.pain-item:hover { border-color: var(--border-strong); }
-.pain-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.1px; }
+.pain-item:hover { background: var(--bg-surface); }
+.pain-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.2px; }
 .pain-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── STEPS ───────────────────────────────────────────── */
-.steps { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.steps { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 .step  { display: flex; border-bottom: 1px solid var(--border); }
 .step:last-child { border-bottom: none; }
 .step-num {
   font-family: 'JetBrains Mono', monospace;
-  width: 60px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 26px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-disabled);
-  border-right: 1px solid var(--border);
+  width: 64px; flex-shrink: 0;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 26px; font-size: 11px; font-weight: 500;
+  color: var(--text-disabled); border-right: 1px solid var(--border);
 }
-.step-body {
-  flex: 1;
-  padding: 24px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
+.step-body { flex: 1; padding: 24px 28px; display: flex; gap: 16px; align-items: flex-start; }
 .step-icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--text-secondary);
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg-surface); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--text-secondary);
 }
 .step-content  { flex: 1; }
 .step-title    { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.2px; }
 .step-desc     { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 12px; }
 .step-tag {
-  display: inline-block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--text-muted);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 3px 9px;
+  display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-muted); background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 3px 9px;
 }
 
 /* ── FEATURES ────────────────────────────────────────── */
-.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.feature-card {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px;
-  transition: border-color 0.15s;
-}
-.feature-card:hover { border-color: var(--border-strong); }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.feature-card  { background: var(--bg-card); padding: 24px; transition: background 0.15s; }
+.feature-card:hover { background: var(--bg-surface); }
 .feature-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  margin-bottom: 14px;
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg-surface); display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); margin-bottom: 14px;
 }
-.feature-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.1px; }
-.feature-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.feature-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.1px; }
+.feature-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── LINK CALLOUT ────────────────────────────────────── */
-.link-callout { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-.callout-title { font-size: clamp(24px, 3.5vw, 32px); font-weight: 600; letter-spacing: -0.8px; line-height: 1.15; color: var(--text-primary); margin-bottom: 14px; }
-.callout-desc  { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+.link-callout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.callout-title { font-size: clamp(28px, 4vw, 40px); font-weight: 600; letter-spacing: -1px; line-height: 1.1; color: var(--text-primary); margin-bottom: 14px; }
+.callout-desc  { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
 .link-demo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 9px 12px;
-  margin-bottom: 18px;
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 12px; margin-bottom: 18px;
 }
-.link-demo-url { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--brand); }
+.link-demo-url { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); }
 .link-demo-tag {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 2px 7px;
+  font-size: 10px; font-weight: 500; color: var(--text-muted);
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 7px;
 }
 .channel-pills { display: flex; flex-wrap: wrap; gap: 6px; }
 .channel-pill  {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 11px;
-  border-radius: 100px;
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
+  font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 100px;
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
 }
 .callout-right   { display: flex; justify-content: center; }
 .product-mock {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.06);
-  width: 100%;
-  max-width: 300px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.07); width: 100%; max-width: 300px;
 }
-.mock-img-area {
-  background: var(--bg-surface);
-  padding: 28px;
-  border-bottom: 1px solid var(--border);
-}
+.mock-img-area { background: var(--bg-surface); padding: 28px; border-bottom: 1px solid var(--border); }
 .mock-img-placeholder {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--border-strong);
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  height: 140px; display: flex; align-items: center; justify-content: center; color: var(--border-strong);
 }
 .mock-body      { padding: 18px; }
 .mock-name      { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.2px; }
-.mock-price     { font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.5px; }
+.mock-price     { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.5px; }
 .mock-desc-text { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
 .mock-variants  { display: flex; gap: 6px; margin-bottom: 14px; }
 .mock-variant {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--bg-surface);
+  width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; color: var(--text-muted); background: var(--bg-surface);
 }
-.mock-variant--active { border-color: var(--brand); background: var(--brand); color: #fff; }
+.mock-variant--active { border-color: var(--text-primary); background: var(--text-primary); color: var(--bg-page); }
 .mock-order-btn {
-  width: 100%;
-  height: 38px;
-  background: var(--brand);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  margin-bottom: 8px;
-  transition: background 0.15s;
+  width: 100%; height: 38px; background: var(--text-primary); color: var(--bg-page);
+  border: none; border-radius: 6px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: inherit; margin-bottom: 8px; transition: opacity 0.15s;
 }
-.mock-order-btn:hover { background: var(--brand-hover); }
+.mock-order-btn:hover { opacity: 0.82; }
 .mock-wa-btn {
-  width: 100%;
-  height: 36px;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color 0.15s;
+  width: 100%; height: 36px; background: none; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 12px; color: var(--text-secondary);
+  cursor: pointer; font-family: inherit; transition: border-color 0.15s;
 }
 .mock-wa-btn:hover { border-color: var(--border-strong); }
 
 /* ── PRICING ─────────────────────────────────────────── */
-.pricing-wrap  { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-.pricing-card  { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+.pricing-wrap  { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+.pricing-card  { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 28px; }
 .pricing-top   { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 12px; }
-.pricing-tier  { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+.pricing-tier  { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
 .pricing-price { font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 600; letter-spacing: -2px; color: var(--text-primary); line-height: 1; margin-bottom: 6px; }
 .pricing-note  { font-size: 11px; color: var(--text-muted); }
 .pricing-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 100px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  background: var(--status-pending-bg);
-  color: var(--status-pending-text);
+  display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0;
+  background: var(--amber-bg); color: var(--amber-text);
 }
 .pricing-list  { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .pricing-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
-.check-icon    { color: var(--status-paid-text); flex-shrink: 0; margin-top: 1px; }
+.check-icon    { color: var(--green-text); flex-shrink: 0; margin-top: 1px; }
 .pricing-aside { display: flex; flex-direction: column; gap: 10px; }
-.aside-label   { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
-.testimonial   { background: var(--bg-page); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
-.testimonial-text   { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 14px; }
+.aside-label   { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+.testimonial   { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.testimonial-text   { font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 14px; font-style: italic; }
 .testimonial-author { display: flex; align-items: center; gap: 10px; }
 .t-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
 .t-name   { font-size: 12px; font-weight: 600; color: var(--text-primary); }
 .t-role   { font-size: 11px; color: var(--text-muted); }
 
 /* ── CTA SECTION ─────────────────────────────────────── */
-.cta-section { background: #0F1117; padding: 100px 32px; text-align: center; }
-.cta-inner   { max-width: 540px; margin: 0 auto; }
+.cta-section { background: var(--text-primary); padding: 110px 40px; text-align: left; }
+.cta-inner   { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
 .cta-eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.4px;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 16px;
+  font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.4px;
+  color: rgba(250,250,249,0.4); margin-bottom: 14px; display: block;
 }
 .cta-title {
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 600;
-  letter-spacing: -1.2px;
-  color: #F9FAFB;
-  margin-bottom: 14px;
-  line-height: 1.1;
+  font-size: clamp(32px, 4.5vw, 52px); font-weight: 600; letter-spacing: -1.5px;
+  color: var(--bg-page); margin-bottom: 14px; line-height: 1.08;
 }
-.cta-sub  { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.7; margin-bottom: 40px; }
-.cta-note { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 14px; }
+.cta-sub  { font-size: 14px; color: rgba(250,250,249,0.5); line-height: 1.7; }
+.cta-note { font-size: 11px; color: rgba(250,250,249,0.25); margin-top: 14px; }
 
 /* ── WAITLIST FORM ───────────────────────────────────── */
-.waitlist-form { max-width: 460px; margin: 0 auto; }
-
-.waitlist-form-row {
-  display: flex;
-  gap: 8px;
-  align-items: stretch;     /* key fix — both children same height */
-}
-
+.waitlist-form { max-width: 480px; }
+.waitlist-form-row { display: flex; gap: 8px; align-items: stretch; }
 .waitlist-input {
-  flex: 1;
-  height: 48px;             /* fixed — matches submit button */
-  min-width: 0;
-  padding: 0 16px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  font-size: 15px;
-  color: #F9FAFB;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  flex: 1; height: 48px; min-width: 0; padding: 0 16px;
+  background: rgba(250,250,249,0.07); border: 1px solid rgba(250,250,249,0.15);
+  border-radius: 6px; font-size: 15px; color: var(--bg-page); font-family: inherit;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
 }
-.waitlist-input::placeholder { color: rgba(255,255,255,0.3); }
-.waitlist-input:focus {
-  border-color: rgba(255,255,255,0.35);
-  box-shadow: 0 0 0 3px rgba(79,70,229,0.25);
-}
-.waitlist-input--error {
-  border-color: rgba(239,68,68,0.6);
-}
-
+.waitlist-input::placeholder { color: rgba(250,250,249,0.3); }
+.waitlist-input:focus { border-color: rgba(250,250,249,0.4); box-shadow: 0 0 0 3px rgba(250,250,249,0.06); }
+.waitlist-input--error { border-color: rgba(239,68,68,0.6); }
 .waitlist-submit {
-  height: 48px;             /* matches input exactly */
-  padding: 0 22px;
-  background: var(--brand);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.15s, opacity 0.15s;
+  height: 48px; padding: 0 22px; background: var(--bg-page);
+  color: var(--text-primary); border: none; border-radius: 6px;
+  font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit;
+  white-space: nowrap; flex-shrink: 0; transition: opacity 0.15s;
 }
-.waitlist-submit:hover:not(:disabled) { background: var(--brand-hover); }
-.waitlist-submit:disabled             { opacity: 0.55; cursor: not-allowed; }
-
-.waitlist-error {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #FCA5A5;
-  text-align: left;
-}
-
+.waitlist-submit:hover:not(:disabled) { opacity: 0.88; }
+.waitlist-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.waitlist-error { margin-top: 10px; font-size: 12px; color: #FCA5A5; }
 .waitlist-success {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #6EE7B7;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 14px;
-  background: rgba(110,231,183,0.08);
-  border: 1px solid rgba(110,231,183,0.2);
-  border-radius: 8px;
+  display: flex; align-items: center; gap: 8px; color: #6EE7B7; font-size: 14px; font-weight: 500;
+  padding: 14px; background: rgba(110,231,183,0.08); border: 1px solid rgba(110,231,183,0.2); border-radius: 6px;
 }
-
-/* Loading dots */
 .loading-dots        { display: flex; gap: 4px; align-items: center; justify-content: center; }
-.loading-dots span   { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: dot-pulse 1.2s ease-in-out infinite; }
+.loading-dots span   { width: 5px; height: 5px; border-radius: 50%; background: var(--text-primary); animation: dot-pulse 1.2s ease-in-out infinite; }
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dot-pulse {
@@ -1383,25 +987,32 @@ const testimonials = [
 }
 
 /* ── FOOTER ──────────────────────────────────────────── */
-.footer       { border-top: 1px solid var(--border); background: var(--bg-page); padding: 20px 32px; }
-.footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-.footer-logo  { display: flex; align-items: center; gap: 8px; }
-.footer-logo-icon  { width: 22px; height: 22px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.footer-logo-img   { width: 100%; height: 100%; object-fit: contain; }
-.footer-logo-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
-.footer-v          { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-disabled); }
-.footer-links      { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
-.footer-links a    { font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
-.footer-links a:hover { color: var(--text-secondary); }
-.footer-copy       { font-size: 11px; color: var(--text-disabled); }
+.footer { border-top: 1px solid rgba(250,250,249,0.08); background: var(--text-primary); padding: 56px 40px; }
+.footer-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, 160px) 1fr;
+  gap: 40px; align-items: start;
+}
+.footer-col { display: flex; flex-direction: column; gap: 10px; }
+.footer-col-label {
+  font-size: 10px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1.2px; color: rgba(250,250,249,0.35); margin-bottom: 4px;
+}
+.footer-col a {
+  font-size: 13px; color: rgba(250,250,249,0.55); text-decoration: none;
+  transition: color 0.15s;
+}
+.footer-col a:hover { color: rgba(250,250,249,0.9); }
+.footer-brand { text-align: right; }
+.footer-logo  { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-bottom: 8px; }
+.footer-logo-icon { width: 22px; height: 22px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.footer-logo-img  { width: 100%; height: 100%; object-fit: contain; filter: brightness(0) invert(1); }
+.footer-logo-name { font-size: 14px; font-weight: 600; color: rgba(250,250,249,0.9); letter-spacing: -0.3px; }
+.footer-tagline   { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(250,250,249,0.3); margin-bottom: 8px; }
+.footer-copy      { font-size: 11px; color: rgba(250,250,249,0.2); }
 
 /* ── SCROLL REVEAL ───────────────────────────────────── */
-.reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  transition-delay: var(--delay, 0ms);
-}
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; transition-delay: var(--delay, 0ms); }
 .reveal.revealed { opacity: 1; transform: translateY(0); }
 
 /* ── RESPONSIVE ──────────────────────────────────────── */
@@ -1409,44 +1020,39 @@ const testimonials = [
   .features-grid { grid-template-columns: 1fr 1fr; }
   .pricing-wrap  { grid-template-columns: 1fr; }
   .link-callout  { grid-template-columns: 1fr; gap: 36px; }
+  .cta-inner     { grid-template-columns: 1fr; gap: 36px; }
+  .footer-inner  { grid-template-columns: repeat(2, 1fr); }
+  .footer-brand  { text-align: left; }
+  .footer-logo   { justify-content: flex-start; }
 }
 
 @media (max-width: 768px) {
   .nav-links     { display: none; }
   .nav-actions   { display: none; }
   .nav-hamburger { display: flex; }
-  .hero          { padding: 60px 20px 52px; }
-  .section       { padding: 64px 20px; }
-  .proof-bar     { padding: 14px 20px; }
+  .nav-inner     { padding: 0 24px; }
+  .hero          { padding: 64px 24px 52px; }
+  .hero-inner    { align-items: flex-start; }
+  .section       { padding: 64px 24px; }
+  .proof-bar     { padding: 14px 24px; }
   .pain-grid     { grid-template-columns: 1fr; }
   .preview-stats { grid-template-columns: repeat(2, 1fr); }
   .pt-head, .pt-row { grid-template-columns: 88px 1fr 80px 100px; }
-  .cta-section   { padding: 72px 20px; }
-  .footer        { padding: 16px 20px; }
-  .footer-inner  { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .cta-section   { padding: 72px 24px; }
+  .footer        { padding: 40px 24px; }
   .hide-sm       { display: none; }
 }
 
-/* ── Mobile waitlist form fix ────────────────────────── */
 @media (max-width: 560px) {
-  .waitlist-form-row {
-    flex-direction: column;  /* stack vertically */
-    gap: 10px;
-  }
-  .waitlist-input {
-    width: 100%;
-    font-size: 16px;         /* prevents iOS zoom on focus */
-  }
-  .waitlist-submit {
-    width: 100%;
-    height: 50px;
-    font-size: 15px;
-  }
+  .waitlist-form-row { flex-direction: column; gap: 10px; }
+  .waitlist-input    { width: 100%; font-size: 16px; }
+  .waitlist-submit   { width: 100%; height: 50px; font-size: 15px; }
 }
 
 @media (max-width: 480px) {
   .features-grid { grid-template-columns: 1fr; }
   .proof-inner   { flex-direction: column; gap: 8px; }
   .proof-sep     { display: none; }
+  .footer-inner  { grid-template-columns: 1fr; }
 }
 </style>
