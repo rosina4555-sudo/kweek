@@ -531,9 +531,10 @@ const testimonials = [
   --status-paid-text:    #3B6D11;
   --status-pending-bg:   #FAEEDA;
   --status-pending-text: #854F0B;
-  font-family: 'Geist', system-ui, sans-serif;
+  /* font-family: 'Geist', system-ui, sans-serif; */
   /* font-family: 'DM Sans', 'Inter', system-ui, sans-serif; */
   /* font-family: 'DM Sans', 'Noto Sans', 'Inter', system-ui, sans-serif; */
+  font-family: 'Geist', 'Noto Sans', system-ui, sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
   font-size: 14px;
