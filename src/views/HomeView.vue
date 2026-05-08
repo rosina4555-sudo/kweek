@@ -194,14 +194,14 @@ const testimonials = [
           </a>
         </div>
 
-        <!-- <div class="hero-trust">
-          <Sparkles :size="13" :stroke-width="2.5" class="trust-check" />
+        <div class="hero-trust">
+          <!-- <Sparkles :size="13" :stroke-width="2.5" class="trust-check" /> -->
           Free during beta
           <span class="trust-sep">·</span>
           No credit card
           <span class="trust-sep">·</span>
           Easy setup
-        </div> -->
+        </div>
 
         <!-- Dashboard preview -->
         <div class="preview reveal">
@@ -723,7 +723,7 @@ const testimonials = [
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden;
-  box-shadow: 0 4px 40px rgba(0,0,0,0.07), 0 1px 0 rgba(0,0,0,0.04);
+  /* box-shadow: 0 4px 40px rgba(0,0,0,0.07), 0 1px 0 rgba(0,0,0,0.04); */
 }
 .preview-bar {
   background: var(--bg-surface); border-bottom: 1px solid var(--border);
@@ -883,7 +883,7 @@ const testimonials = [
 .product-mock {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.07); width: 100%; max-width: 300px;
+  /* box-shadow: 0 4px 32px rgba(0,0,0,0.07); width: 100%; max-width: 300px; */
 }
 .mock-img-area { background: var(--bg-surface); padding: 28px; border-bottom: 1px solid var(--border); }
 .mock-img-placeholder {
