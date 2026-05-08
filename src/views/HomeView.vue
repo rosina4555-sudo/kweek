@@ -97,10 +97,10 @@ const features = [
 ]
 
 const mockOrders = [
-  { id: '#KW-1042', name: 'Abena Mensah',  product: 'Ankara Dress · Size M',     location: 'Kumasi',        amount: 'GH₵ 160', status: 'paid'   },
-  { id: '#KW-1041', name: 'Kofi Asante',   product: 'Kente Bag · Brown · ×2',    location: 'Accra Central', amount: 'GH₵ 160', status: 'unpaid' },
-  { id: '#KW-1040', name: 'Efua Darko',    product: 'Leather Sandals · Size 40', location: 'East Legon',    amount: 'GH₵ 120', status: 'pod'    },
-  { id: '#KW-1039', name: 'Ama Boateng',   product: 'Dashiki Shirt · L, Navy',   location: 'Takoradi',      amount: 'GH₵ 85',  status: 'paid'   },
+  { id: '#KW-1042', name: 'Abena Mensah',  product: 'Ankara Dress · Size M',     location: 'Kumasi',        amount: 'GHS 160', status: 'paid'   },
+  { id: '#KW-1041', name: 'Kofi Asante',   product: 'Kente Bag · Brown · ×2',    location: 'Accra Central', amount: 'GHS 160', status: 'unpaid' },
+  { id: '#KW-1040', name: 'Efua Darko',    product: 'Leather Sandals · Size 40', location: 'East Legon',    amount: 'GHS 120', status: 'pod'    },
+  { id: '#KW-1039', name: 'Ama Boateng',   product: 'Dashiki Shirt · L, Navy',   location: 'Takoradi',      amount: 'GHS 85',  status: 'paid'   },
 ]
 
 const pricingFeatures = [
@@ -207,7 +207,7 @@ const testimonials = [
         <div class="preview reveal">
           <div class="preview-bar">
             <div class="preview-dots"><span /><span /><span /></div>
-            <span class="preview-url">kweek.app/dashboard/orders</span>
+            <span class="preview-url">kweek.com/dashboard/orders</span>
           </div>
           <div class="preview-stats">
             <div class="stat-item">
@@ -216,8 +216,8 @@ const testimonials = [
             </div>
             <div class="stat-item">
               <p class="stat-label">Pending payment</p>
-              <!-- <p class="stat-value">GH₵ 1,240</p> -->
-               <p class="stat-value">GH&#x20B5; 1,240</p>
+              <p class="stat-value">GH₵ 1,240</p>
+               <!-- <p class="stat-value">GH&#x20B5; 1,240</p> -->
             </div>
             <div class="stat-item">
               <p class="stat-label">Paid today</p>
@@ -225,8 +225,8 @@ const testimonials = [
             </div>
             <div class="stat-item">
               <p class="stat-label">This week</p>
-              <!-- <p class="stat-value">GH₵ 3,820</p> -->
-              <p class="stat-value">GH&#x20b5; 3,820</p>
+              <p class="stat-value">GH₵ 3,820</p>
+              <!-- <p class="stat-value">GH&#x20b5; 3,820</p> -->
             </div>
           </div>
           <div class="preview-table-wrap">
@@ -243,8 +243,8 @@ const testimonials = [
               <span class="pt-name">{{ o.name }}</span>
               <span class="pt-product hide-sm">{{ o.product }}</span>
               <span class="pt-location hide-sm">{{ o.location }}</span>
-              <!-- <span class="pt-amount ta-r">{{ o.amount }}</span> -->
-              <span class="pt-amount ta-r" v-html="o.amount.replace('GH₵', 'GH&#x20B5;')"></span>
+              <span class="pt-amount ta-r">{{ o.amount }}</span>
+              <!-- <span class="pt-amount ta-r" v-html="o.amount.replace('GH₵', 'GH&#x20B5;')"></span> -->
               <span class="ta-r">
                 <span :class="['st-badge', `st-badge--${o.status}`]">
                   {{ o.status === 'pod' ? 'Pay on delivery' : o.status === 'paid' ? 'Paid' : 'Unpaid' }}
