@@ -2,50 +2,120 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
-  Link2, PenLine, Wallet, CheckCircle2, 
-  AlarmClockCheck, 
+  Link2, PenLine, Wallet, CheckCircle2,
+  AlarmClockCheck,
   Menu, X as XIcon,
+  Mail, Instagram, MessageCircle,
 } from 'lucide-vue-next'
 
 // ── Mobile nav ────────────────────────────────────────
 const mobileNavOpen = ref(false)
 
-// ── Waitlist form ─────────────────────────────────────
-const email       = ref('')
-const submitted   = ref(false)
-const submitting  = ref(false)
-const formError   = ref('')
+// ── Contact modal ─────────────────────────────────────
+const contactOpen       = ref(false)
+const contactName       = ref('')
+const contactEmail      = ref('')
+const contactMsg        = ref('')
+const contactSubmitting = ref(false)
+const contactSubmitted  = ref(false)
+const contactError      = ref('')
 
-function scrollToWaitlist(e) {
+function openContact()  { contactOpen.value = true; document.body.style.overflow = 'hidden' }
+function closeContact() { contactOpen.value = false; document.body.style.overflow = '' }
+
+async function submitContact() {
+  contactError.value = ''
+  if (!contactName.value.trim())  { contactError.value = 'Please enter your name.'; return }
+  if (!contactEmail.value.trim()) { contactError.value = 'Please enter your email.'; return }
+  if (!contactMsg.value.trim())   { contactError.value = 'Please enter a message.'; return }
+  if (contactSubmitting.value) return
+  contactSubmitting.value = true
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/contact/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: contactName.value.trim(),
+        email: contactEmail.value.trim(),
+        message: contactMsg.value.trim(),
+      }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      const detail = data?.detail
+      contactError.value = typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail) ? detail.map(e => e.msg).join(', ') : 'Something went wrong. Please try again.'
+      return
+    }
+    contactSubmitted.value = true
+  } catch {
+    contactError.value = 'Unable to connect. Please check your connection and try again.'
+  } finally {
+    contactSubmitting.value = false
+  }
+}
+
+// ── Scroll helpers ────────────────────────────────────
+function scrollTo(id, e) {
   e?.preventDefault()
   mobileNavOpen.value = false
-  document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+}
+function scrollToWaitlist(e) { scrollTo('waitlist', e) }
+
+// ── Waitlist form ─────────────────────────────────────
+const wlName        = ref('')
+const wlEmail       = ref('')
+const wlSells       = ref('')
+const wlChannels    = ref([])
+const wlMonthly     = ref('')
+const wlProblem     = ref('')
+const submitted     = ref(false)
+const submitting    = ref(false)
+const formError     = ref('')
+
+const channelOptions = ['Instagram', 'WhatsApp', 'TikTok', 'X (Twitter)', 'Facebook', 'Other']
+
+function toggleChannel(ch) {
+  const idx = wlChannels.value.indexOf(ch)
+  idx === -1 ? wlChannels.value.push(ch) : wlChannels.value.splice(idx, 1)
 }
 
 async function submitWaitlist() {
   formError.value = ''
-  const emailVal = email.value.trim()
-  if (!emailVal) { formError.value = 'Please enter your email address.'; return }
+  if (!wlName.value.trim())  { formError.value = 'Please enter your name.'; return }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(emailVal)) { formError.value = 'Please enter a valid email address.'; return }
+  if (!wlEmail.value.trim() || !emailRegex.test(wlEmail.value.trim())) {
+    formError.value = 'Please enter a valid email address.'; return
+  }
+  if (!wlSells.value.trim()) { formError.value = 'Please tell us what you sell.'; return }
+  if (wlChannels.value.length === 0) { formError.value = 'Please select at least one channel.'; return }
   if (submitting.value) return
   submitting.value = true
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/waitlist/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailVal, source: 'landing_page' }),
+      body: JSON.stringify({
+        name:           wlName.value.trim(),
+        email:          wlEmail.value.trim(),
+        sells:          wlSells.value.trim(),
+        channels:       wlChannels.value,
+        monthly_orders: wlMonthly.value.trim() || null,
+        biggest_problem:wlProblem.value.trim() || null,
+        source:         'landing_page',
+      }),
     })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
       const detail = data?.detail
-      if (typeof detail === 'string') formError.value = detail
-      else if (Array.isArray(detail)) formError.value = detail.map(e => e.msg).join(', ')
-      else formError.value = 'Something went wrong. Please try again.'
+      formError.value = typeof detail === 'string'
+        ? detail
+        : Array.isArray(detail) ? detail.map(e => e.msg).join(', ') : 'Something went wrong. Please try again.'
       return
     }
     submitted.value = true
-    email.value = ''
   } catch {
     formError.value = 'Unable to connect. Please check your connection and try again.'
   } finally {
@@ -66,7 +136,10 @@ onMounted(() => {
   )
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
 })
-onUnmounted(() => observer?.disconnect())
+onUnmounted(() => {
+  observer?.disconnect()
+  document.body.style.overflow = ''
+})
 
 // ── Static data ───────────────────────────────────────
 const steps = [
@@ -113,13 +186,81 @@ const pricingFeatures = [
 ]
 
 const testimonials = [
-  { text: 'I was tracking everything in my head and a notes app. I have been looking for something exactly like this.', name: 'Sandra', role: 'Fashion seller, Kumasi', avatar: 'A' },
-  { text: 'The DM chaos is real. Every week I lose track of who ordered what. Kweek solves that completely.', name: 'Ben', role: 'Electronics reseller, Accra', avatar: 'K' },
+  { text: 'I was tracking everything in my head and a notes app. I have been looking for something exactly like this.', name: 'Sandra', role: 'Fashion seller, Kumasi', avatar: 'S' },
+  { text: 'The DM chaos is real. Every week I lose track of who ordered what. Kweek solves that completely.', name: 'Ben', role: 'Electronics reseller, Accra', avatar: 'B' },
 ]
 </script>
 
 <template>
   <div class="landing">
+
+    <!-- ── CONTACT MODAL ───────────────────────────────────────────── -->
+    <Transition name="t-modal">
+      <div v-if="contactOpen" class="modal-backdrop" @click.self="closeContact">
+        <div class="modal-panel">
+          <div class="modal-header">
+            <div>
+              <p class="modal-eyebrow">Contact sales</p>
+              <h2 class="modal-title">Let's talk</h2>
+            </div>
+            <button class="modal-close" @click="closeContact">
+              <XIcon :size="16" :stroke-width="2" />
+            </button>
+          </div>
+
+          <div v-if="!contactSubmitted" class="modal-body">
+            <p class="modal-desc">
+              Have questions before joining? Want to discuss a specific use case?
+              Send us a message and we'll get back to you within 24 hours.
+            </p>
+
+            <div class="modal-fields">
+              <div class="field-group field-group--half">
+                <label class="field-label">Name</label>
+                <input v-model="contactName" type="text" placeholder="Your name" class="field-input" />
+              </div>
+              <div class="field-group field-group--half">
+                <label class="field-label">Email</label>
+                <input v-model="contactEmail" type="email" placeholder="your@email.com" class="field-input" />
+              </div>
+              <div class="field-group field-group--full">
+                <label class="field-label">Message</label>
+                <textarea v-model="contactMsg" placeholder="Tell us what you'd like to know..." class="field-textarea" rows="4" />
+              </div>
+            </div>
+
+            <p v-if="contactError" class="modal-error">{{ contactError }}</p>
+
+            <button class="btn-primary btn--full modal-submit" @click="submitContact" :disabled="contactSubmitting">
+              <span v-if="!contactSubmitting">Send message</span>
+              <span v-else class="loading-dots"><span /><span /><span /></span>
+            </button>
+
+            <div class="modal-alt">
+              <span class="modal-alt-label">Or reach us directly</span>
+              <div class="modal-alt-links">
+                <a href="mailto:hello@kweek.app" class="modal-alt-link">
+                  <Mail :size="13" :stroke-width="2" /> hello@kweek.app
+                </a>
+                <a href="https://instagram.com/kweekapp" target="_blank" class="modal-alt-link">
+                  <Instagram :size="13" :stroke-width="2" /> @kweekapp
+                </a>
+                <a href="https://wa.me/233000000000" target="_blank" class="modal-alt-link">
+                  <MessageCircle :size="13" :stroke-width="2" /> WhatsApp us
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="modal-success">
+            <CheckCircle2 :size="28" :stroke-width="1.8" class="modal-success-icon" />
+            <h3 class="modal-success-title">Message sent</h3>
+            <p class="modal-success-sub">We'll get back to you at <strong>{{ contactEmail }}</strong> within 24 hours.</p>
+            <button class="btn-primary" @click="closeContact">Close</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- ── NAV ─────────────────────────────────────── -->
     <nav class="nav">
@@ -133,13 +274,13 @@ const testimonials = [
         </div>
 
         <ul class="nav-links">
-          <li><a href="#how"      @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a></li>
-          <li><a href="#features" @click.prevent="document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a></li>
-          <li><a href="#pricing"  @click.prevent="document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a></li>
+          <li><a href="#how"      @click="scrollTo('how', $event)">How it works</a></li>
+          <li><a href="#features" @click="scrollTo('features', $event)">Features</a></li>
+          <li><a href="#pricing"  @click="scrollTo('pricing', $event)">Pricing</a></li>
         </ul>
 
         <div class="nav-actions">
-          <button class="btn-ghost-nav" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">
+          <button class="btn-ghost-nav" @click="openContact">
             Contact sales
           </button>
           <button class="btn-primary btn--sm" @click="scrollToWaitlist">
@@ -155,9 +296,10 @@ const testimonials = [
 
       <Transition name="t-mobile-nav">
         <div v-if="mobileNavOpen" class="mobile-nav">
-          <a href="#how"      class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a>
-          <a href="#features" class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a>
-          <a href="#pricing"  class="mobile-nav-link" @click="mobileNavOpen = false; document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a>
+          <a href="#how"      class="mobile-nav-link" @click="scrollTo('how', $event)">How it works</a>
+          <a href="#features" class="mobile-nav-link" @click="scrollTo('features', $event)">Features</a>
+          <a href="#pricing"  class="mobile-nav-link" @click="scrollTo('pricing', $event)">Pricing</a>
+          <a href="#"         class="mobile-nav-link" @click.prevent="mobileNavOpen = false; openContact()">Contact sales</a>
           <div class="mobile-nav-divider" />
           <button class="btn-primary btn--full" @click="scrollToWaitlist">
             Get early access
@@ -172,10 +314,6 @@ const testimonials = [
       <div class="hero-grid" aria-hidden="true" />
       <div class="hero-inner">
 
-        <!-- <div class="hero-eyebrow">
-          Built for social sellers in Ghana and West Africa
-        </div> -->
-
         <h1 class="hero-title">
           Your orders.<br />
           <span class="hero-title-dim">Finally organised.</span>
@@ -189,13 +327,12 @@ const testimonials = [
           <button class="btn-primary btn--hero" @click="scrollToWaitlist">
             Get early access →
           </button>
-          <a href="#how" class="btn-outline" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">
+          <a href="#how" class="btn-outline" @click="scrollTo('how', $event)">
             See how it works
           </a>
         </div>
 
         <div class="hero-trust">
-          <!-- <Sparkles :size="13" :stroke-width="2.5" class="trust-check" /> -->
           Free during beta
           <span class="trust-sep">·</span>
           No credit card
@@ -217,7 +354,6 @@ const testimonials = [
             <div class="stat-item">
               <p class="stat-label">Pending payment</p>
               <p class="stat-value">GHS 1,240</p>
-               <!-- <p class="stat-value">GH&#x20B5; 1,240</p> -->
             </div>
             <div class="stat-item">
               <p class="stat-label">Paid today</p>
@@ -226,7 +362,6 @@ const testimonials = [
             <div class="stat-item">
               <p class="stat-label">This week</p>
               <p class="stat-value">GHS 3,820</p>
-              <!-- <p class="stat-value">GH&#x20b5; 3,820</p> -->
             </div>
           </div>
           <div class="preview-table-wrap">
@@ -244,7 +379,6 @@ const testimonials = [
               <span class="pt-product hide-sm">{{ o.product }}</span>
               <span class="pt-location hide-sm">{{ o.location }}</span>
               <span class="pt-amount ta-r">{{ o.amount }}</span>
-              <!-- <span class="pt-amount ta-r" v-html="o.amount.replace('GH₵', 'GH&#x20B5;')"></span> -->
               <span class="ta-r">
                 <span :class="['st-badge', `st-badge--${o.status}`]">
                   {{ o.status === 'pod' ? 'Pay on delivery' : o.status === 'paid' ? 'Paid' : 'Unpaid' }}
@@ -440,39 +574,89 @@ const testimonials = [
     <!-- ── CTA / WAITLIST ───────────────────────────── -->
     <section class="cta-section" id="waitlist">
       <div class="cta-inner reveal">
-        <p class="cta-eyebrow">Join the waitlist</p>
-        <h2 class="cta-title">Ready to stop the chaos?</h2>
-        <p class="cta-sub">
-          We're onboarding in small batches. Drop your email and we'll reach out when your spot is ready.
-        </p>
+        <div class="cta-text">
+          <p class="cta-eyebrow">Join the waitlist</p>
+          <h2 class="cta-title">Ready to stop the chaos?</h2>
+          <p class="cta-sub">
+            We're onboarding in small batches. Fill in the form and we'll reach out when your spot is ready.
+          </p>
+        </div>
 
-        <form class="waitlist-form" @submit.prevent="submitWaitlist" novalidate>
+        <!-- ── EXPANDED WAITLIST FORM ─────────────── -->
+        <div class="waitlist-card">
           <template v-if="!submitted">
-            <div class="waitlist-form-row">
-              <input
-                v-model="email"
-                type="email"
-                inputmode="email"
-                autocomplete="email"
-                placeholder="your@email.com"
-                class="waitlist-input"
-                :class="{ 'waitlist-input--error': formError }"
-                required
-              />
-              <button type="submit" class="waitlist-submit" :disabled="submitting">
-                <span v-if="!submitting">Get early access</span>
-                <span v-else class="loading-dots"><span /><span /><span /></span>
-              </button>
-            </div>
-            <p v-if="formError" class="waitlist-error">{{ formError }}</p>
-          </template>
-          <div v-else class="waitlist-success">
-            <CheckCircle2 :size="16" :stroke-width="2" />
-            You're on the list. We'll be in touch soon.
-          </div>
-        </form>
+            <div class="wl-fields">
 
-        <p class="cta-note">No credit card required. Unsubscribe any time.</p>
+              <!-- Row 1: Name + Email -->
+              <div class="wl-row wl-row--2">
+                <div class="wl-group">
+                  <label class="wl-label">Your name <span class="req">*</span></label>
+                  <input v-model="wlName" type="text" placeholder="e.g. Akua Mensah" class="wl-input" />
+                </div>
+                <div class="wl-group">
+                  <label class="wl-label">Email address <span class="req">*</span></label>
+                  <input v-model="wlEmail" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" class="wl-input" :class="{ 'wl-input--error': formError && formError.includes('email') }" />
+                </div>
+              </div>
+
+              <!-- Row 2: What do you sell -->
+              <div class="wl-group">
+                <label class="wl-label">What do you sell? <span class="req">*</span></label>
+                <input v-model="wlSells" type="text" placeholder="e.g. Women's fashion, electronics, food..." class="wl-input" />
+              </div>
+
+              <!-- Row 3: Channel multi-select -->
+              <div class="wl-group">
+                <label class="wl-label">Where do you sell most? <span class="req">*</span></label>
+                <div class="wl-channels">
+                  <button
+                    v-for="ch in channelOptions"
+                    :key="ch"
+                    type="button"
+                    :class="['wl-channel-btn', wlChannels.includes(ch) && 'wl-channel-btn--active']"
+                    @click="toggleChannel(ch)"
+                  >{{ ch }}</button>
+                </div>
+              </div>
+
+              <!-- Row 4: Monthly orders (optional) -->
+              <div class="wl-group">
+                <label class="wl-label">Monthly orders <span class="wl-optional">(optional)</span></label>
+                <select v-model="wlMonthly" class="wl-select">
+                  <option value="">Select a range</option>
+                  <option value="1-10">1 – 10 orders</option>
+                  <option value="11-50">11 – 50 orders</option>
+                  <option value="51-150">51 – 150 orders</option>
+                  <option value="150+">150+ orders</option>
+                </select>
+              </div>
+
+              <!-- Row 5: Biggest problem -->
+              <div class="wl-group">
+                <label class="wl-label">Biggest problem today? <span class="wl-optional">(optional)</span></label>
+                <textarea v-model="wlProblem" placeholder="Tell us what's making your selling life difficult..." class="wl-textarea" rows="3" />
+              </div>
+
+            </div>
+
+            <p v-if="formError" class="wl-error">{{ formError }}</p>
+
+            <button class="btn-primary wl-submit" @click="submitWaitlist" :disabled="submitting">
+              <span v-if="!submitting">Get early access — it's free</span>
+              <span v-else class="loading-dots"><span /><span /><span /></span>
+            </button>
+
+            <p class="wl-note">No credit card required. Unsubscribe any time.</p>
+          </template>
+
+          <div v-else class="wl-success">
+            <CheckCircle2 :size="22" :stroke-width="2" />
+            <div>
+              <p class="wl-success-title">You're on the list!</p>
+              <p class="wl-success-sub">We'll reach out to <strong>{{ wlEmail }}</strong> when your spot is ready.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -481,9 +665,9 @@ const testimonials = [
       <div class="footer-inner">
         <div class="footer-col">
           <p class="footer-col-label">Product</p>
-          <a href="#how" @click.prevent="document.getElementById('how')?.scrollIntoView({behavior:'smooth'})">How it works</a>
-          <a href="#features" @click.prevent="document.getElementById('features')?.scrollIntoView({behavior:'smooth'})">Features</a>
-          <a href="#pricing" @click.prevent="document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})">Pricing</a>
+          <a href="#how"      @click="scrollTo('how', $event)">How it works</a>
+          <a href="#features" @click="scrollTo('features', $event)">Features</a>
+          <a href="#pricing"  @click="scrollTo('pricing', $event)">Pricing</a>
         </div>
         <div class="footer-col">
           <p class="footer-col-label">Legal</p>
@@ -493,6 +677,7 @@ const testimonials = [
         <div class="footer-col">
           <p class="footer-col-label">Contact</p>
           <a href="mailto:hello@kweek.app">hello@kweek.app</a>
+          <a href="#" @click.prevent="openContact">Contact sales</a>
         </div>
         <div class="footer-brand">
           <div class="footer-logo">
@@ -511,7 +696,7 @@ const testimonials = [
 </template>
 
 <style scoped>
-/* ── TOKENS (koomart palette) ────────────────────────── */
+/* ── TOKENS ──────────────────────────────────────────── */
 .landing {
   --bg-page:             #FAFAF9;
   --bg-surface:          #F4F3F1;
@@ -544,23 +729,13 @@ const testimonials = [
 
 /* ── BUTTONS ─────────────────────────────────────────── */
 .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 40px;
-  padding: 0 18px;
-  background: var(--text-primary);
-  color: var(--bg-page);
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  font-family: inherit;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 40px; padding: 0 18px;
+  background: var(--text-primary); color: var(--bg-page);
+  border: none; border-radius: 6px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  text-decoration: none; font-family: inherit;
+  letter-spacing: -0.1px; white-space: nowrap;
   transition: opacity 0.15s;
 }
 .btn-primary:hover    { opacity: 0.82; }
@@ -570,69 +745,153 @@ const testimonials = [
 .btn--full { width: 100%; height: 44px; font-size: 13px; }
 
 .btn-outline {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 20px;
-  background: none;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  text-decoration: none;
-  font-family: inherit;
+  display: inline-flex; align-items: center;
+  height: 44px; padding: 0 20px;
+  background: none; border: 1px solid var(--border-strong); border-radius: 6px;
+  font-size: 13px; color: var(--text-secondary);
+  cursor: pointer; text-decoration: none; font-family: inherit;
   transition: color 0.15s, border-color 0.15s;
 }
 .btn-outline:hover { color: var(--text-primary); border-color: var(--text-muted); }
 
 .btn-ghost-nav {
-  display: inline-flex;
-  align-items: center;
-  height: 34px;
-  padding: 0 14px;
-  background: none;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-family: inherit;
-  transition: color 0.15s, border-color 0.15s;
-  white-space: nowrap;
+  display: inline-flex; align-items: center;
+  height: 34px; padding: 0 14px;
+  background: none; border: 1px solid var(--border-strong); border-radius: 6px;
+  font-size: 12px; font-weight: 400; color: var(--text-secondary);
+  cursor: pointer; font-family: inherit;
+  transition: color 0.15s, border-color 0.15s; white-space: nowrap;
 }
 .btn-ghost-nav:hover { color: var(--text-primary); border-color: var(--text-muted); }
 
+/* ── CONTACT MODAL ───────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(26, 25, 22, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.modal-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%; max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+}
+.modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-eyebrow {
+  font-size: 10px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 4px;
+}
+.modal-title {
+  font-size: 20px; font-weight: 600; color: var(--text-primary);
+  letter-spacing: -0.4px; margin: 0;
+}
+.modal-close {
+  width: 32px; height: 32px; border-radius: 6px;
+  border: 1px solid var(--border); background: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); cursor: pointer; flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+.modal-close:hover { color: var(--text-primary); border-color: var(--border-strong); }
+
+.modal-body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 20px; }
+.modal-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+.modal-fields { display: flex; flex-direction: column; gap: 16px; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-group--half { flex: 1; min-width: 0; }
+.field-group--full { width: 100%; }
+
+/* Two-column row inside modal */
+.modal-fields > .field-group:has(.field-group--half) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+/* Simpler: wrap half groups in a row div */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.field-label {
+  font-size: 11px; font-weight: 500; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.field-input {
+  height: 42px; padding: 0 12px;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; color: var(--text-primary); font-family: inherit;
+  outline: none; transition: border-color 0.15s;
+  width: 100%;
+}
+.field-input:focus { border-color: var(--border-strong); }
+.field-textarea {
+  padding: 10px 12px; resize: vertical; min-height: 80px;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; color: var(--text-primary); font-family: inherit; line-height: 1.55;
+  outline: none; transition: border-color 0.15s; width: 100%;
+}
+.field-textarea:focus { border-color: var(--border-strong); }
+
+.modal-error {
+  font-size: 12px; color: #C0392B; background: #FEF2F2;
+  border: 1px solid #FCA5A5; border-radius: 6px; padding: 10px 12px; margin: 0;
+}
+.modal-submit { height: 44px; font-size: 14px; }
+
+.modal-alt { border-top: 1px solid var(--border); padding-top: 20px; }
+.modal-alt-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 12px; }
+.modal-alt-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.modal-alt-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px 12px;
+  text-decoration: none; transition: color 0.15s, border-color 0.15s;
+}
+.modal-alt-link:hover { color: var(--text-primary); border-color: var(--border-strong); }
+
+.modal-success {
+  padding: 48px 28px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 10px;
+}
+.modal-success-icon  { color: var(--green-text); }
+.modal-success-title { font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; margin: 0; }
+.modal-success-sub   { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0 0 16px; }
+
+/* Modal transitions */
+.t-modal-enter-active, .t-modal-leave-active { transition: opacity 0.2s ease; }
+.t-modal-enter-from, .t-modal-leave-to { opacity: 0; }
+.t-modal-enter-active .modal-panel,
+.t-modal-leave-active .modal-panel { transition: transform 0.2s ease, opacity 0.2s ease; }
+.t-modal-enter-from .modal-panel { transform: translateY(12px) scale(0.98); opacity: 0; }
+.t-modal-leave-to .modal-panel   { transform: translateY(8px) scale(0.98); opacity: 0; }
+
 /* ── NAV ─────────────────────────────────────────────── */
 .nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
   background: rgba(250, 250, 249, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
 }
 .nav-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 40px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  gap: 24px;
+  max-width: 1100px; margin: 0 auto; padding: 0 40px; height: 56px;
+  display: flex; align-items: center; gap: 24px;
 }
 .nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-logo-icon {
-  width: 28px; height: 28px; overflow: hidden; color: var(--text-primary);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
+.nav-logo-icon { width: 28px; height: 28px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nav-logo-img  { width: 100%; height: 100%; object-fit: contain; }
 .nav-logo-name { font-size: 15px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.4px; }
 .nav-badge {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; font-weight: 500;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500;
   padding: 2px 6px; border-radius: 4px;
   background: var(--bg-surface); border: 1px solid var(--border);
   color: var(--text-muted); letter-spacing: 0.3px;
@@ -675,8 +934,7 @@ const testimonials = [
   background-image:
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.5;
+  background-size: 48px 48px; opacity: 0.5;
   mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 30%, transparent 100%);
   pointer-events: none;
 }
@@ -684,88 +942,53 @@ const testimonials = [
   max-width: 1100px; margin: 0 auto;
   display: flex; flex-direction: column; align-items: flex-start; text-align: left;
 }
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--bg-card); border: 1px solid var(--border); border-radius: 100px;
-  padding: 5px 14px; margin-bottom: 32px;
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.8px; text-transform: uppercase;
-  color: var(--text-muted);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
 .hero-title {
-  font-size: clamp(44px, 6.5vw, 80px);
-  font-weight: 600;
-  letter-spacing: -3px;
-  line-height: 1.0;
-  color: var(--text-primary);
-  margin-bottom: 22px;
-  max-width: 700px;
+  font-size: clamp(44px, 6.5vw, 80px); font-weight: 600;
+  letter-spacing: -3px; line-height: 1.0;
+  color: var(--text-primary); margin-bottom: 22px; max-width: 700px;
 }
 .hero-title-dim { color: var(--text-disabled); }
 .hero-sub {
   font-size: 16px; color: var(--text-secondary); line-height: 1.7;
   max-width: 480px; margin-bottom: 36px; font-weight: 400;
 }
-.hero-actions {
-  display: flex; align-items: center; gap: 10px;
-  flex-wrap: wrap; margin-bottom: 16px;
-}
+.hero-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 .hero-trust {
   display: flex; align-items: center; gap: 6px;
-  font-size: 11px; color: var(--text-disabled);
-  margin-bottom: 60px; flex-wrap: wrap;
+  font-size: 11px; color: var(--text-disabled); margin-bottom: 60px; flex-wrap: wrap;
 }
-.trust-check { color: var(--green-text); flex-shrink: 0; }
-.trust-sep   { color: var(--border-strong); }
+.trust-sep { color: var(--border-strong); }
 
 /* ── PREVIEW ─────────────────────────────────────────── */
 .preview {
   width: 100%; max-width: 960px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px; overflow: hidden;
-  /* box-shadow: 0 4px 40px rgba(0,0,0,0.07), 0 1px 0 rgba(0,0,0,0.04); */
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
 }
 .preview-bar {
   background: var(--bg-surface); border-bottom: 1px solid var(--border);
   padding: 10px 16px; display: flex; align-items: center; gap: 10px;
 }
-.preview-dots        { display: flex; gap: 5px; }
-.preview-dots span   { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); }
+.preview-dots      { display: flex; gap: 5px; }
+.preview-dots span { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); }
 .preview-url {
   font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 5px; padding: 3px 10px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 5px; padding: 3px 10px;
 }
 .preview-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); }
 .stat-item { padding: 16px 20px; border-right: 1px solid var(--border); }
 .stat-item:last-child { border-right: none; }
-.stat-label {
-  font-size: 10px; font-weight: 500; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px;
-}
-.stat-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 18px; font-weight: 600; letter-spacing: -0.5px;
-  color: var(--text-primary); line-height: 1;
-}
+.stat-label { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+.stat-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: var(--text-primary); line-height: 1; }
 .preview-table-wrap { overflow-x: auto; }
 .pt-head {
   display: grid; grid-template-columns: 96px 1fr 1fr 96px 88px 120px;
-  padding: 8px 20px; background: var(--bg-surface);
-  border-bottom: 1px solid var(--border); gap: 12px;
+  padding: 8px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border); gap: 12px;
 }
-.pt-head span {
-  font-size: 10px; font-weight: 500; color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.8px;
-}
+.pt-head span { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
 .pt-row {
   display: grid; grid-template-columns: 96px 1fr 1fr 96px 88px 120px;
-  padding: 12px 20px; border-bottom: 1px solid var(--border);
-  align-items: center; gap: 12px;
-  animation: rowIn 0.3s ease both;
-  animation-delay: var(--delay, 0ms);
+  padding: 12px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 12px;
+  animation: rowIn 0.3s ease both; animation-delay: var(--delay, 0ms);
 }
 .pt-row:last-child { border-bottom: none; }
 @keyframes rowIn {
@@ -784,7 +1007,7 @@ const testimonials = [
 }
 .st-badge--paid   { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-bg); }
 .st-badge--unpaid { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-bg); }
-.st-badge--pod    { background: var(--bg-surface); color: var(--text-muted);  border-color: var(--border); }
+.st-badge--pod    { background: var(--bg-surface); color: var(--text-muted); border-color: var(--border); }
 
 /* ── PROOF BAR ───────────────────────────────────────── */
 .proof-bar   { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-surface); padding: 14px 40px; }
@@ -796,29 +1019,24 @@ const testimonials = [
 .proof-quote { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
 /* ── SECTIONS ────────────────────────────────────────── */
-.section      { padding: 96px 40px; background: var(--bg-page); }
-.section--alt { background: var(--bg-surface); }
+.section       { padding: 96px 40px; background: var(--bg-page); }
+.section--alt  { background: var(--bg-surface); }
 .section-inner { max-width: 1100px; margin: 0 auto; }
 .section-head  { margin-bottom: 52px; max-width: 580px; }
 .section-eyebrow {
-  font-size: 10px; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 1.4px;
-  color: var(--text-muted); margin-bottom: 12px;
-  display: block;
+  font-size: 10px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1.4px; color: var(--text-muted); margin-bottom: 12px; display: block;
 }
 .section-title {
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 600; letter-spacing: -1px; line-height: 1.12;
+  font-size: clamp(28px, 4vw, 42px); font-weight: 600;
+  letter-spacing: -1px; line-height: 1.12;
   color: var(--text-primary); margin-bottom: 12px;
 }
 .section-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
 
 /* ── PAIN ────────────────────────────────────────────── */
 .pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.pain-item {
-  background: var(--bg-card); padding: 28px 24px;
-  transition: background 0.15s;
-}
+.pain-item { background: var(--bg-card); padding: 28px 24px; transition: background 0.15s; }
 .pain-item:hover { background: var(--bg-surface); }
 .pain-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.2px; }
 .pain-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
@@ -828,13 +1046,12 @@ const testimonials = [
 .step  { display: flex; border-bottom: 1px solid var(--border); }
 .step:last-child { border-bottom: none; }
 .step-num {
-  font-family: 'JetBrains Mono', monospace;
-  width: 64px; flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace; width: 64px; flex-shrink: 0;
   display: flex; align-items: flex-start; justify-content: center;
   padding-top: 26px; font-size: 11px; font-weight: 500;
   color: var(--text-disabled); border-right: 1px solid var(--border);
 }
-.step-body { flex: 1; padding: 24px 28px; display: flex; gap: 16px; align-items: flex-start; }
+.step-body    { flex: 1; padding: 24px 28px; display: flex; gap: 16px; align-items: flex-start; }
 .step-icon-wrap {
   width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
   background: var(--bg-surface); display: flex; align-items: center; justify-content: center;
@@ -862,31 +1079,22 @@ const testimonials = [
 .feature-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 
 /* ── LINK CALLOUT ────────────────────────────────────── */
-.link-callout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.link-callout  { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
 .callout-title { font-size: clamp(28px, 4vw, 40px); font-weight: 600; letter-spacing: -1px; line-height: 1.1; color: var(--text-primary); margin-bottom: 14px; }
 .callout-desc  { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
 .link-demo {
   display: inline-flex; align-items: center; gap: 10px;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 6px; padding: 9px 12px; margin-bottom: 18px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; margin-bottom: 18px;
 }
 .link-demo-url { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); }
 .link-demo-tag {
   font-size: 10px; font-weight: 500; color: var(--text-muted);
-  background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: 4px; padding: 2px 7px;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px;
 }
 .channel-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.channel-pill  {
-  font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 100px;
-  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
-}
-.callout-right   { display: flex; justify-content: center; }
-.product-mock {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 12px; overflow: hidden;
-  /* box-shadow: 0 4px 32px rgba(0,0,0,0.07); width: 100%; max-width: 300px; */
-}
+.channel-pill  { font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 100px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); }
+.callout-right { display: flex; justify-content: center; }
+.product-mock  { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
 .mock-img-area { background: var(--bg-surface); padding: 28px; border-bottom: 1px solid var(--border); }
 .mock-img-placeholder {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
@@ -903,17 +1111,9 @@ const testimonials = [
   font-size: 11px; font-weight: 500; color: var(--text-muted); background: var(--bg-surface);
 }
 .mock-variant--active { border-color: var(--text-primary); background: var(--text-primary); color: var(--bg-page); }
-.mock-order-btn {
-  width: 100%; height: 38px; background: var(--text-primary); color: var(--bg-page);
-  border: none; border-radius: 6px; font-size: 13px; font-weight: 500;
-  cursor: pointer; font-family: inherit; margin-bottom: 8px; transition: opacity 0.15s;
-}
+.mock-order-btn { width: 100%; height: 38px; background: var(--text-primary); color: var(--bg-page); border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; margin-bottom: 8px; transition: opacity 0.15s; }
 .mock-order-btn:hover { opacity: 0.82; }
-.mock-wa-btn {
-  width: 100%; height: 36px; background: none; border: 1px solid var(--border);
-  border-radius: 6px; font-size: 12px; color: var(--text-secondary);
-  cursor: pointer; font-family: inherit; transition: border-color 0.15s;
-}
+.mock-wa-btn { width: 100%; height: 36px; background: none; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--text-secondary); cursor: pointer; font-family: inherit; transition: border-color 0.15s; }
 .mock-wa-btn:hover { border-color: var(--border-strong); }
 
 /* ── PRICING ─────────────────────────────────────────── */
@@ -923,11 +1123,7 @@ const testimonials = [
 .pricing-tier  { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
 .pricing-price { font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 600; letter-spacing: -2px; color: var(--text-primary); line-height: 1; margin-bottom: 6px; }
 .pricing-note  { font-size: 11px; color: var(--text-muted); }
-.pricing-badge {
-  display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
-  padding: 4px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0;
-  background: var(--amber-bg); color: var(--amber-text);
-}
+.pricing-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0; background: var(--amber-bg); color: var(--amber-text); }
 .pricing-list  { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .pricing-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 .check-icon    { color: var(--green-text); flex-shrink: 0; margin-top: 1px; }
@@ -940,47 +1136,117 @@ const testimonials = [
 .t-name   { font-size: 12px; font-weight: 600; color: var(--text-primary); }
 .t-role   { font-size: 11px; color: var(--text-muted); }
 
-/* ── CTA SECTION ─────────────────────────────────────── */
-.cta-section { background: var(--text-primary); padding: 110px 40px; text-align: left; }
-.cta-inner   { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
-.cta-eyebrow {
-  font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.4px;
-  color: rgba(250,250,249,0.4); margin-bottom: 14px; display: block;
-}
-.cta-title {
-  font-size: clamp(32px, 4.5vw, 52px); font-weight: 600; letter-spacing: -1.5px;
-  color: var(--bg-page); margin-bottom: 14px; line-height: 1.08;
-}
-.cta-sub  { font-size: 14px; color: rgba(250,250,249,0.5); line-height: 1.7; }
-.cta-note { font-size: 11px; color: rgba(250,250,249,0.25); margin-top: 14px; }
+/* ── CTA / WAITLIST ──────────────────────────────────── */
+.cta-section { background: var(--text-primary); padding: 96px 40px; }
+.cta-inner   { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.4fr; gap: 72px; align-items: start; }
+.cta-eyebrow { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.4px; color: rgba(250,250,249,0.4); margin-bottom: 14px; display: block; }
+.cta-title   { font-size: clamp(30px, 4vw, 48px); font-weight: 600; letter-spacing: -1.5px; color: var(--bg-page); margin-bottom: 14px; line-height: 1.08; }
+.cta-sub     { font-size: 14px; color: rgba(250,250,249,0.5); line-height: 1.7; }
 
-/* ── WAITLIST FORM ───────────────────────────────────── */
-.waitlist-form { max-width: 480px; }
-.waitlist-form-row { display: flex; gap: 8px; align-items: stretch; }
-.waitlist-input {
-  flex: 1; height: 48px; min-width: 0; padding: 0 16px;
-  background: rgba(250,250,249,0.07); border: 1px solid rgba(250,250,249,0.15);
-  border-radius: 6px; font-size: 15px; color: var(--bg-page); font-family: inherit;
-  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+/* ── WAITLIST CARD ───────────────────────────────────── */
+.waitlist-card {
+  background: rgba(250,250,249,0.05);
+  border: 0px solid rgba(250,250,249,0.10);
+  border-radius: 8px;
+  padding: 28px;
 }
-.waitlist-input::placeholder { color: rgba(250,250,249,0.3); }
-.waitlist-input:focus { border-color: rgba(250,250,249,0.4); box-shadow: 0 0 0 3px rgba(250,250,249,0.06); }
-.waitlist-input--error { border-color: rgba(239,68,68,0.6); }
-.waitlist-submit {
-  height: 48px; padding: 0 22px; background: var(--bg-page);
-  color: var(--text-primary); border: none; border-radius: 6px;
-  font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit;
-  white-space: nowrap; flex-shrink: 0; transition: opacity 0.15s;
+.wl-fields { display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px; }
+.wl-row    { display: flex; gap: 14px; }
+.wl-row--2 { }
+.wl-group  { display: flex; flex-direction: column; gap: 7px; flex: 1; min-width: 0; }
+
+.wl-label {
+  font-size: 11px; font-weight: 500;
+  color: rgba(250,250,249,0.55);
+  text-transform: uppercase; letter-spacing: 0.7px;
 }
-.waitlist-submit:hover:not(:disabled) { opacity: 0.88; }
-.waitlist-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-.waitlist-error { margin-top: 10px; font-size: 12px; color: #FCA5A5; }
-.waitlist-success {
-  display: flex; align-items: center; gap: 8px; color: #6EE7B7; font-size: 14px; font-weight: 500;
-  padding: 14px; background: rgba(110,231,183,0.08); border: 1px solid rgba(110,231,183,0.2); border-radius: 6px;
+.req          { color: rgba(250,250,249,0.3); }
+.wl-optional  { font-size: 10px; font-weight: 400; color: rgba(250,250,249,0.3); text-transform: none; letter-spacing: 0; }
+
+.wl-input {
+  height: 44px; padding: 0 14px; width: 100%;
+  background: rgba(250,250,249,0.07);
+  border: 0px solid rgba(250,250,249,0.13);
+  border-radius: 6px; font-size: 14px;
+  color: var(--bg-page); font-family: inherit;
+  outline: none; transition: border-color 0.15s;
 }
+.wl-input::placeholder { color: rgba(250,250,249,0.25); }
+.wl-input:focus        { border-color: rgba(250,250,249,0.35); }
+.wl-input--error       { border-color: rgba(239,68,68,0.6); }
+
+.wl-select {
+  height: 44px; padding: 0 14px; width: 100%;
+  background: rgba(250,250,249,0.07);
+  border: 0px solid rgba(250,250,249,0.13);
+  border-radius: 6px; font-size: 14px;
+  color: var(--bg-page); font-family: inherit;
+  outline: none; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(250,250,249,0.35)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  transition: border-color 0.15s;
+}
+.wl-select:focus { border-color: rgba(250,250,249,0.35); }
+.wl-select option { background: #2a2926; color: #FAFAF9; }
+
+.wl-textarea {
+  padding: 12px 14px; width: 100%; resize: vertical; min-height: 80px;
+  background: rgba(250,250,249,0.07);
+  border: 0px solid rgba(250,250,249,0.13);
+  border-radius: 6px; font-size: 14px; line-height: 1.55;
+  color: var(--bg-page); font-family: inherit;
+  outline: none; transition: border-color 0.15s;
+}
+.wl-textarea::placeholder { color: rgba(250,250,249,0.25); }
+.wl-textarea:focus        { border-color: rgba(250,250,249,0.35); }
+
+/* Channel toggle buttons */
+.wl-channels { display: flex; flex-wrap: wrap; gap: 8px; }
+.wl-channel-btn {
+  height: 34px; padding: 0 14px;
+  background: rgba(250,250,249,0.06);
+  border: 0px solid rgba(250,250,249,0.13);
+  border-radius: 100px; font-size: 12px; font-weight: 500;
+  color: rgba(250,250,249,0.55); cursor: pointer; font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.wl-channel-btn:hover     { background: rgba(250,250,249,0.10); color: rgba(250,250,249,0.8); }
+.wl-channel-btn--active   {
+  background: var(--bg-page); border-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.wl-error {
+  font-size: 12px; color: #FCA5A5; margin-bottom: 12px;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 6px; padding: 10px 12px;
+}
+.wl-submit {
+  width: 100%; height: 48px; font-size: 14px; font-weight: 500;
+  background: var(--bg-page); color: var(--text-primary);
+  border: none; border-radius: 6px; cursor: pointer; font-family: inherit;
+  transition: opacity 0.15s; margin-bottom: 12px;
+}
+.wl-submit:hover:not(:disabled) { opacity: 0.88; }
+.wl-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.wl-note { font-size: 11px; color: rgba(250,250,249,0.25); text-align: center; }
+
+.wl-success {
+  display: flex; align-items: flex-start; gap: 14px;
+  color: #6EE7B7; padding: 4px 0;
+}
+.wl-success-title { font-size: 15px; font-weight: 600; color: #6EE7B7; margin-bottom: 4px; }
+.wl-success-sub   { font-size: 13px; color: rgba(250,250,249,0.5); line-height: 1.55; }
+.wl-success-sub strong { color: rgba(250,250,249,0.75); }
+
+/* ── LOADING DOTS ────────────────────────────────────── */
 .loading-dots        { display: flex; gap: 4px; align-items: center; justify-content: center; }
-.loading-dots span   { width: 5px; height: 5px; border-radius: 50%; background: var(--text-primary); animation: dot-pulse 1.2s ease-in-out infinite; }
+.loading-dots span   { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: dot-pulse 1.2s ease-in-out infinite; }
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dot-pulse {
@@ -996,14 +1262,8 @@ const testimonials = [
   gap: 40px; align-items: start;
 }
 .footer-col { display: flex; flex-direction: column; gap: 10px; }
-.footer-col-label {
-  font-size: 10px; font-weight: 500; text-transform: uppercase;
-  letter-spacing: 1.2px; color: rgba(250,250,249,0.35); margin-bottom: 4px;
-}
-.footer-col a {
-  font-size: 13px; color: rgba(250,250,249,0.55); text-decoration: none;
-  transition: color 0.15s;
-}
+.footer-col-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(250,250,249,0.35); margin-bottom: 4px; }
+.footer-col a { font-size: 13px; color: rgba(250,250,249,0.55); text-decoration: none; transition: color 0.15s; cursor: pointer; }
 .footer-col a:hover { color: rgba(250,250,249,0.9); }
 .footer-brand { text-align: right; }
 .footer-logo  { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-bottom: 8px; filter: brightness(0) invert(1); }
@@ -1034,21 +1294,18 @@ const testimonials = [
   .nav-hamburger { display: flex; }
   .nav-inner     { padding: 0 24px; }
   .hero          { padding: 64px 24px 52px; }
-  .hero-inner    { align-items: flex-start; }
   .section       { padding: 64px 24px; }
   .proof-bar     { padding: 14px 24px; }
   .pain-grid     { grid-template-columns: 1fr; }
   .preview-stats { grid-template-columns: repeat(2, 1fr); }
   .pt-head, .pt-row { grid-template-columns: 88px 1fr 80px 100px; }
-  .cta-section   { padding: 72px 24px; }
+  .cta-section   { padding: 64px 24px; }
   .footer        { padding: 40px 24px; }
   .hide-sm       { display: none; }
-}
-
-@media (max-width: 560px) {
-  .waitlist-form-row { flex-direction: column; gap: 10px; }
-  .waitlist-input    { width: 100%; font-size: 16px; }
-  .waitlist-submit   { width: 100%; height: 50px; font-size: 15px; }
+  /* Waitlist form stacks on mobile */
+  .wl-row { flex-direction: column; gap: 20px; }
+  /* Modal fields stack on mobile */
+  .field-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
@@ -1056,5 +1313,8 @@ const testimonials = [
   .proof-inner   { flex-direction: column; gap: 8px; }
   .proof-sep     { display: none; }
   .footer-inner  { grid-template-columns: 1fr; }
+  .hero-title    { letter-spacing: -2px; }
+  .wl-channels   { gap: 6px; }
+  .wl-channel-btn { height: 36px; font-size: 13px; }
 }
 </style>
