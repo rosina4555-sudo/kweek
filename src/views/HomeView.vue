@@ -113,8 +113,8 @@ const pricingFeatures = [
 ]
 
 const testimonials = [
-  { text: 'I was tracking everything in my head and a notes app. I have been looking for something exactly like this.', name: 'Akua D.', role: 'Fashion seller, Kumasi', avatar: 'A' },
-  { text: 'The DM chaos is real. Every week I lose track of who ordered what. Kweek solves that completely.', name: 'Kwame B.', role: 'Electronics reseller, Accra', avatar: 'K' },
+  { text: 'I was tracking everything in my head and a notes app. I have been looking for something exactly like this.', name: 'Sandra', role: 'Fashion seller, Kumasi', avatar: 'A' },
+  { text: 'The DM chaos is real. Every week I lose track of who ordered what. Kweek solves that completely.', name: 'Ben', role: 'Electronics reseller, Accra', avatar: 'K' },
 ]
 </script>
 
