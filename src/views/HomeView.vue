@@ -216,7 +216,8 @@ const testimonials = [
             </div>
             <div class="stat-item">
               <p class="stat-label">Pending payment</p>
-              <p class="stat-value">GH₵ 1,240</p>
+              <!-- <p class="stat-value">GH₵ 1,240</p> -->
+               <p class="stat-value">GH&#x20B5; 1,240</p>
             </div>
             <div class="stat-item">
               <p class="stat-label">Paid today</p>
@@ -224,7 +225,8 @@ const testimonials = [
             </div>
             <div class="stat-item">
               <p class="stat-label">This week</p>
-              <p class="stat-value">GH₵ 3,820</p>
+              <!-- <p class="stat-value">GH₵ 3,820</p> -->
+              <p class="stat-value">GH&#x20b5; 3,820</p>
             </div>
           </div>
           <div class="preview-table-wrap">
@@ -241,7 +243,8 @@ const testimonials = [
               <span class="pt-name">{{ o.name }}</span>
               <span class="pt-product hide-sm">{{ o.product }}</span>
               <span class="pt-location hide-sm">{{ o.location }}</span>
-              <span class="pt-amount ta-r">{{ o.amount }}</span>
+              <!-- <span class="pt-amount ta-r">{{ o.amount }}</span> -->
+              <span class="pt-amount ta-r" v-html="o.amount.replace('GH₵', 'GH&#x20B5;')"></span>
               <span class="ta-r">
                 <span :class="['st-badge', `st-badge--${o.status}`]">
                   {{ o.status === 'pod' ? 'Pay on delivery' : o.status === 'paid' ? 'Paid' : 'Unpaid' }}
@@ -531,9 +534,6 @@ const testimonials = [
   --status-paid-text:    #3B6D11;
   --status-pending-bg:   #FAEEDA;
   --status-pending-text: #854F0B;
-  /* font-family: 'Geist', system-ui, sans-serif; */
-  /* font-family: 'DM Sans', 'Inter', system-ui, sans-serif; */
-  /* font-family: 'DM Sans', 'Noto Sans', 'Inter', system-ui, sans-serif; */
   font-family: 'Geist', 'Noto Sans', system-ui, sans-serif;
   background: var(--bg-page);
   color: var(--text-primary);
