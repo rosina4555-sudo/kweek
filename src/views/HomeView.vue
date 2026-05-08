@@ -194,14 +194,14 @@ const testimonials = [
           </a>
         </div>
 
-        <div class="hero-trust">
+        <!-- <div class="hero-trust">
           <Sparkles :size="13" :stroke-width="2.5" class="trust-check" />
           Free during beta
           <span class="trust-sep">·</span>
           No credit card
           <span class="trust-sep">·</span>
           Easy setup
-        </div>
+        </div> -->
 
         <!-- Dashboard preview -->
         <div class="preview reveal">
