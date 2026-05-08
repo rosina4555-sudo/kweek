@@ -126,7 +126,7 @@ const testimonials = [
       <div class="nav-inner">
         <div class="nav-logo">
           <div class="nav-logo-icon">
-            <img src="/images/logo_kweek.png" alt="Kweek" class="nav-logo-img" />
+            <img src="/images/kweek_logo_1.png" alt="Kweek" class="nav-logo-img" />
           </div>
           <span class="nav-logo-name">Kweek</span>
           <span class="nav-badge">beta</span>
@@ -216,7 +216,7 @@ const testimonials = [
             </div>
             <div class="stat-item">
               <p class="stat-label">Pending payment</p>
-              <p class="stat-value">GH₵ 1,240</p>
+              <p class="stat-value">GHS 1,240</p>
                <!-- <p class="stat-value">GH&#x20B5; 1,240</p> -->
             </div>
             <div class="stat-item">
@@ -225,7 +225,7 @@ const testimonials = [
             </div>
             <div class="stat-item">
               <p class="stat-label">This week</p>
-              <p class="stat-value">GH₵ 3,820</p>
+              <p class="stat-value">GHS 3,820</p>
               <!-- <p class="stat-value">GH&#x20b5; 3,820</p> -->
             </div>
           </div>
@@ -497,7 +497,7 @@ const testimonials = [
         <div class="footer-brand">
           <div class="footer-logo">
             <div class="footer-logo-icon">
-              <img src="/images/logo_kweek.png" alt="Kweek" class="footer-logo-img" />
+              <img src="/images/kweek_logo_1.png" alt="Kweek" class="footer-logo-img" />
             </div>
             <span class="footer-logo-name">Kweek</span>
           </div>
@@ -1006,9 +1006,9 @@ const testimonials = [
 }
 .footer-col a:hover { color: rgba(250,250,249,0.9); }
 .footer-brand { text-align: right; }
-.footer-logo  { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-bottom: 8px; }
+.footer-logo  { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-bottom: 8px; filter: brightness(0) invert(1); }
 .footer-logo-icon { width: 22px; height: 22px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.footer-logo-img  { width: 100%; height: 100%; object-fit: contain; filter: brightness(0) invert(1); }
+.footer-logo-img  { width: 100%; height: 100%; object-fit: contain; }
 .footer-logo-name { font-size: 14px; font-weight: 600; color: rgba(250,250,249,0.9); letter-spacing: -0.3px; }
 .footer-tagline   { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(250,250,249,0.3); margin-bottom: 8px; }
 .footer-copy      { font-size: 11px; color: rgba(250,250,249,0.2); }
