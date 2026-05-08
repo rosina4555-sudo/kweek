@@ -2,8 +2,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
-  Link2, PenLine, Wallet, CheckCircle2, Zap,
-  AlarmClockCheck, ShieldCheck, Sparkles,
+  Link2, PenLine, Wallet, CheckCircle2, 
+  AlarmClockCheck, 
   Menu, X as XIcon,
 } from 'lucide-vue-next'
 
@@ -304,7 +304,7 @@ const testimonials = [
             <div class="step-num">{{ step.num }}</div>
             <div class="step-body">
               <div class="step-icon-wrap">
-                <component :is="step.icon" :size="15" :stroke-width="1.8" />
+                <component :is="step.icon" :size="15" :stroke-width="2" />
               </div>
               <div class="step-content">
                 <p class="step-title">{{ step.title }}</p>
@@ -531,8 +531,9 @@ const testimonials = [
   --status-paid-text:    #3B6D11;
   --status-pending-bg:   #FAEEDA;
   --status-pending-text: #854F0B;
-
-  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+  font-family: 'Geist', system-ui, sans-serif;
+  /* font-family: 'DM Sans', 'Inter', system-ui, sans-serif; */
+  /* font-family: 'DM Sans', 'Noto Sans', 'Inter', system-ui, sans-serif; */
   background: var(--bg-page);
   color: var(--text-primary);
   font-size: 14px;
