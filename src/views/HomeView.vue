@@ -485,7 +485,7 @@ const testimonials = [
               Every product you list features a professional, streamlined checkout page. Share your unique link across platforms like WhatsApp, Instagram, and TikTok to enable customers to complete purchases directly without manual coordination.
             </p>
             <div class="link-demo">
-              <span class="link-demo-url">kweek.app/store/amas-boutique</span>
+              <span class="link-demo-url">kweek.com/store/amas-boutique</span>
               <span class="link-demo-tag">Your link</span>
             </div>
             <div class="channel-pills">
@@ -499,13 +499,15 @@ const testimonials = [
           <div class="callout-right">
             <div class="product-mock">
               <div class="mock-img-area">
-                <div class="mock-img-placeholder">
-                  <Package :size="32" :stroke-width="1.2" />
+                <!-- <div class="mock-img-placeholder"> -->
+                  <div class="card-thumb">
+                  <!-- <Package :size="32" :stroke-width="1.2" /> -->
+                    <img src="/images/kweek_jacket_single.png" alt="Kweek" class="thumb-img" />
                 </div>
               </div>
               <div class="mock-body">
-                <p class="mock-name">Ankara Wrap Dress</p>
-                <p class="mock-price">GH₵ 160</p>
+                <p class="mock-name">Kweek Jacket</p>
+                <p class="mock-price">GHS 160</p>
                 <p class="mock-desc-text">Premium fabric, fully lined. Available in multiple sizes and colour options.</p>
                 <div class="mock-variants">
                   <span class="mock-variant mock-variant--active">S</span>
@@ -1095,10 +1097,24 @@ const testimonials = [
 .channel-pill  { font-size: 11px; font-weight: 500; padding: 4px 11px; border-radius: 100px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); }
 .callout-right { display: flex; justify-content: center; }
 .product-mock  { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-.mock-img-area { background: var(--bg-surface); padding: 28px; border-bottom: 1px solid var(--border); }
+.mock-img-area { background: var(--bg-surface); padding: 30px; border-bottom: 1px solid var(--border); }
 .mock-img-placeholder {
-  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  /* background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; */
   height: 140px; display: flex; align-items: center; justify-content: center; color: var(--border-strong);
+}
+.card-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  background: var(--bg-surface);
+  cursor: pointer;
+  overflow: hidden;
+}
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s;
 }
 .mock-body      { padding: 18px; }
 .mock-name      { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.2px; }
