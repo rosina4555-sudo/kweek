@@ -42,7 +42,7 @@ const routes = [
   {
     path: '/auth',
     component: AuthLayout,
-    beforeEnter: requireGuest,
+    // beforeEnter: requireGuest,
     children: [
       {
         path: 'login',
