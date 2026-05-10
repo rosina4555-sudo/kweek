@@ -77,6 +77,13 @@ const formError     = ref('')
 
 const channelOptions = ['Instagram', 'WhatsApp', 'TikTok', 'X (Twitter)', 'Facebook', 'Other']
 
+// OLD (your current doc 5 still has this)
+// function toggleChannel(ch) {
+//   const idx = wlChannels.value.indexOf(ch)
+//   idx === -1 ? wlChannels.value.push(ch) : wlChannels.value.splice(idx, 1)
+// }
+
+// NEW
 function toggleChannel(ch) {
   const idx = wlChannels.value.indexOf(ch)
   wlChannels.value = idx === -1
@@ -1232,11 +1239,25 @@ const testimonials = [
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   white-space: nowrap;
 }
-.wl-channel-btn:hover     { background: rgba(250,250,249,0.10); color: rgba(250,250,249,0.8); }
+
+
+/* OLD */
+/* .wl-channel-btn:hover     { background: rgba(250,250,249,0.10); color: rgba(250,250,249,0.8); }
 .wl-channel-btn--active   {
   background: var(--bg-page); border-color: var(--bg-page);
   color: var(--text-primary);
+} */
+
+/* NEW */
+.wl-channel-btn:hover { background: rgba(250,250,249,0.10); color: rgba(250,250,249,0.8); }
+.wl-channel-btn--active,
+.wl-channel-btn--active:hover {
+  background: var(--bg-page) !important;
+  border-color: var(--bg-page) !important;
+  color: var(--text-primary) !important;
 }
+
+
 
 .wl-error {
   font-size: 12px; color: #FCA5A5; margin-bottom: 12px;
