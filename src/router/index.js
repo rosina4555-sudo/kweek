@@ -20,15 +20,14 @@ const StorefrontView  = () => import('@/views/dashboard/StorefrontView.vue')
 const AnalyticsView   = () => import('@/views/dashboard/AnalyticsView.vue')
 const SettingsView    = () => import('@/views/dashboard/SettingsView.vue')
 
-// Storefront views — lazy loaded
+
 const StoreHomeView     = () => import('@/views/storefront/StoreHomeView.vue')
 const ProductDetailView = () => import('@/views/storefront/ProductDetailView.vue')
 // const CartView          = () => import('@/views/storefront/CartView.vue')
 // const CheckoutView      = () => import('@/views/storefront/CheckoutView.vue')
 // const OrderSuccessView  = () => import('@/views/storefront/OrderSuccessView.vue')
 
-// 404
-// const NotFoundView = () => import('../views/NotFoundView.vue')
+const NotFoundView = () => import('../views/NotFoundView.vue')
 
 const routes = [
  // at the top of routes array, before auth routes
@@ -157,12 +156,12 @@ const routes = [
   },
 
   // ─── 404 ────────────────────────────────────────────────
-  // {
-  //   path: '/:pathMatch(.*)*',
-  //   name: 'NotFound',
-  //   component: NotFoundView,
-  //   meta: { title: '404 — Kweek' },
-  // },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFoundView,
+    meta: { title: '404 — Kweek' },
+  },
 ]
 
 const router = createRouter({
