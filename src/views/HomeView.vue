@@ -330,7 +330,7 @@ const testimonials = [
         </h1>
 
         <p class="hero-sub">
-          Kweek is a simple workspace built for social sellers. List your products, take buyer orders, and track every payment without dealing with the usual WhatsApp chaos.
+          Kweek is a simple workspace built for social sellers. List your products, take buyer orders, and track every payment without dealing with the usual social media chaos.
         </p>
 
         <div class="hero-actions">

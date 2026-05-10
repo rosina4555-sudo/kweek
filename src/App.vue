@@ -24,11 +24,11 @@ const toastRef = ref(null)
 
 onMounted(() => {
   if (toastRef.value) setToastInstance(toastRef.value)
-  const saved = localStorage.getItem('kweek-theme')
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  if (saved === 'dark' || (!saved && prefersDark)) {
-    document.documentElement.classList.add('dark')
-  }
+  // const saved = localStorage.getItem('kweek-theme')
+  // const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  // if (saved === 'dark' || (!saved && prefersDark)) {
+  //   document.documentElement.classList.add('dark')
+  // }
 })
 </script>
 
