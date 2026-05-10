@@ -79,7 +79,9 @@ const channelOptions = ['Instagram', 'WhatsApp', 'TikTok', 'X (Twitter)', 'Faceb
 
 function toggleChannel(ch) {
   const idx = wlChannels.value.indexOf(ch)
-  idx === -1 ? wlChannels.value.push(ch) : wlChannels.value.splice(idx, 1)
+  wlChannels.value = idx === -1
+    ? [...wlChannels.value, ch]
+    : wlChannels.value.filter(c => c !== ch)
 }
 
 async function submitWaitlist() {
