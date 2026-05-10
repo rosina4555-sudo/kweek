@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useSeoMeta } from '@/composables/useSeoMeta'
 import {
   ArrowRight, Package, ShoppingBag, BadgeCheck,
   Link2, PenLine, Wallet, CheckCircle2,
@@ -9,13 +8,6 @@ import {
   Mail, Instagram, MessageCircle,
 } from 'lucide-vue-next'
 
-
-useSeoMeta({
-  title:       'Social Seller Workspace',
-  description: 'List products, capture buyer orders, and track payments without the WhatsApp chaos.',
-  image:       'https://kweek.onrender.com/og/og-home.png',
-  url:         'https://kweek.onrender.com',
-})
 
 // ── Mobile nav ────────────────────────────────────────
 const mobileNavOpen = ref(false)
