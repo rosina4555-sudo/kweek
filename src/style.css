@@ -97,7 +97,7 @@ body {
 .text-disabled-color  { color: var(--text-disabled); }
 .text-brand-color     { color: var(--brand); }
 
-/* ── Mono — for IDs, prices, amounts, codes ─────────── */
+/* ── Mono ────────────────────────────────────────────── */
 .font-mono {
   font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
   font-size: 13px;
@@ -137,7 +137,7 @@ body {
   line-height: 1.4;
 }
 
-/* ── Numeric / stat value ────────────────────────────── */
+/* ── Stat value ──────────────────────────────────────── */
 .stat-value {
   font-family: 'Geist', system-ui, sans-serif;
   font-size: 29px;
@@ -147,24 +147,24 @@ body {
   line-height: 1;
 }
 
-/* ── Shared input base ───────────────────────────────── */
+/* ── Shared input ────────────────────────────────────── */
 .k-input {
   width: 100%;
+  height: 42px;
+  padding: 0 12px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 7px;
-  padding: 0 12px;
-  height: 42px;
   font-size: 13px;
   color: var(--text-primary);
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
   display: block;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 .k-input:focus {
   border-color: var(--border-strong);
-  box-shadow: 0 0 0 3px rgba(26, 25, 22, 0.06);
+  box-shadow: 0 0 0 3px rgba(26,25,22,0.06);
   background: var(--bg-card);
 }
 .k-input.error,

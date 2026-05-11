@@ -401,6 +401,7 @@ const testimonials = [
     </section>
 
     <!-- ── PROOF BAR ────────────────────────────────── -->
+     <!--
     <div class="proof-bar">
       <div class="proof-inner">
         <div class="proof-stars">
@@ -412,7 +413,7 @@ const testimonials = [
         <div class="proof-sep" />
         <p class="proof-quote">"This is exactly what I've been needing." — Seller, Kumasi</p>
       </div>
-    </div>
+    </div> -->
 
     <!-- ── THE PROBLEM ──────────────────────────────── -->
     <section class="section" id="problem">
@@ -567,17 +568,7 @@ const testimonials = [
             </button>
           </div>
           <div class="pricing-aside">
-            <p class="aside-label">What sellers are saying</p>
-            <div v-for="t in testimonials" :key="t.name" class="testimonial">
-              <p class="testimonial-text">{{ t.text }}</p>
-              <div class="testimonial-author">
-                <div class="t-avatar">{{ t.avatar }}</div>
-                <div>
-                  <p class="t-name">{{ t.name }}</p>
-                  <p class="t-role">{{ t.role }}</p>
-                </div>
-              </div>
-            </div>
+           
           </div>
         </div>
       </div>
