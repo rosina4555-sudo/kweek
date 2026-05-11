@@ -1123,7 +1123,7 @@ const testimonials = [
 .mock-desc-text { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
 .mock-variants  { display: flex; gap: 6px; margin-bottom: 14px; }
 .mock-variant {
-  width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+  width: 30px; height: 30px; border-radius: 6px; border: 0px solid var(--border);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 500; color: var(--text-muted); background: var(--bg-surface);
 }
@@ -1135,7 +1135,7 @@ const testimonials = [
 
 /* ── PRICING ─────────────────────────────────────────── */
 .pricing-wrap  { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-.pricing-card  { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 28px; }
+.pricing-card  { background: var(--bg-card); border: 0px solid var(--border); border-radius: 10px; padding: 28px; }
 .pricing-top   { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 12px; }
 .pricing-tier  { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
 .pricing-price { font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 600; letter-spacing: -2px; color: var(--text-primary); line-height: 1; margin-bottom: 6px; }
